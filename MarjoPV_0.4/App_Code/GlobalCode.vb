@@ -585,7 +585,7 @@ Public Class GlobalCode
     End Function
 
     Public Shared Function CreateAssigneesDropDownListDataTable(CurrentICSR_ID As Integer) As DataTable
-        Dim AssigneesDropDownListReadCommand As New SqlCommand("SELECT Users.ID AS ID, Name, SortOrder FROM Users INNER JOIN RoleAllocations ON Users.ID = RoleAllocations.User_ID INNER JOIN ICSRs ON RoleAllocations.Company_ID = ICSRs.Company_ID WHERE ICSRs.ID = @CurrentICSR_ID AND Users.Active = @Active", Connection)
+        Dim AssigneesDropDownListReadCommand As New SqlCommand("SELECT DISTINCT Users.ID AS ID, Name, SortOrder FROM Users INNER JOIN RoleAllocations ON Users.ID = RoleAllocations.User_ID INNER JOIN ICSRs ON RoleAllocations.Company_ID = ICSRs.Company_ID WHERE ICSRs.ID = @CurrentICSR_ID AND Users.Active = @Active", Connection)
         AssigneesDropDownListReadCommand.Parameters.AddWithValue("@CurrentICSR_ID", CurrentICSR_ID)
         AssigneesDropDownListReadCommand.Parameters.AddWithValue("@Active", 1)
         Dim AssigneesDropDownList_DataTable As New DataTable()
