@@ -114,7 +114,7 @@
                             <td>Expedited Reporting Date:</td>
                             <td>
                                 <asp:Textbox ID="ExpeditedReportingDate_Textbox" runat="server" CssClass="form-control"></asp:Textbox>
-                                <asp:CustomValidator ID="ExpeditedReportingDate_Textbox_Validator" runat="server" OnServerValidate="ExpeditedReportingDate_Textbox_Validator_ServerValidate"></asp:CustomValidator>
+                                <asp:CustomValidator ID="ExpeditedReportingDate_Validator" runat="server" OnServerValidate="ExpeditedReportingConsistency_Validator_ServerValidate"></asp:CustomValidator>
                             </td>
                         </tr>
                     </table>

@@ -358,66 +358,58 @@ Partial Class Application_CreateReport
     End Sub
 
     Protected Sub ExpeditedReportingConsistency_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
-        Dim ValidationResult As String = ExpediteReportingConsistencyValidator(ExpeditedReportingRequired_DropDownList, ExpeditedReportingDone_DropDownList, ExpeditedReportingDate_Textbox)
-        If ValidationResult = "Expedited reporting required, not done, no date entered" Then
-            ExpeditedReportingRequired_DropDownList.CssClass = CssClassSuccess
-            ExpeditedReportingRequired_DropDownList.ToolTip = String.Empty
-            ExpeditedReportingDone_DropDownList.CssClass = CssClassSuccess
-            ExpeditedReportingDone_DropDownList.ToolTip = String.Empty
-            ExpeditedReportingDate_Textbox.CssClass = CssClassSuccess
-            ExpeditedReportingDate_Textbox.ToolTip = String.Empty
-            args.IsValid = True
-        ElseIf ValidationResult = "Expedited reporting required, done, valid date entered" Then 'If expedited reporting is required and was done and a valid expedited reporting date was entered
-            ExpeditedReportingRequired_DropDownList.CssClass = CssClassSuccess
-            ExpeditedReportingRequired_DropDownList.ToolTip = String.Empty
-            ExpeditedReportingDone_DropDownList.CssClass = CssClassSuccess
-            ExpeditedReportingDone_DropDownList.ToolTip = String.Empty
-            ExpeditedReportingDate_Textbox.CssClass = CssClassSuccess
-            ExpeditedReportingDate_Textbox.ToolTip = String.Empty
-            args.IsValid = True
-        ElseIf ValidationResult = "Expedited reporting required, done, invalid date entered" Then 'If expedited reporting is required and was done and an in valid expedited reporting date was entered
-            ExpeditedReportingRequired_DropDownList.CssClass = CssClassSuccess
-            ExpeditedReportingRequired_DropDownList.ToolTip = String.Empty
-            ExpeditedReportingDone_DropDownList.CssClass = CssClassSuccess
-            ExpeditedReportingDone_DropDownList.ToolTip = String.Empty
-            ExpeditedReportingDate_Textbox.CssClass = CssClassFailure
-            ExpeditedReportingDate_Textbox.ToolTip = DateValidationFailToolTip
-            args.IsValid = False
-        ElseIf ValidationResult = "Expedited reporting not required, not done, no date entered" Then 'If expedited reporting is not required, was not done and no expedited reporting date was entered
-            ExpeditedReportingRequired_DropDownList.CssClass = CssClassSuccess
-            ExpeditedReportingRequired_DropDownList.ToolTip = String.Empty
-            ExpeditedReportingDone_DropDownList.CssClass = CssClassSuccess
-            ExpeditedReportingDone_DropDownList.ToolTip = String.Empty
-            ExpeditedReportingDate_Textbox.CssClass = CssClassSuccess
-            ExpeditedReportingDate_Textbox.ToolTip = String.Empty
-            args.IsValid = True
-        ElseIf ValidationResult = "Inconsistency with valid date" Then 'If expedited reporting is not required, but was done and/or there is an inconsistency between expedited reporting done and expedited reporting date entries
-            ExpeditedReportingRequired_DropDownList.CssClass = CssClassFailure
-            ExpeditedReportingRequired_DropDownList.ToolTip = ExpeditedReportingConsistencyValidationFailToolTip
-            ExpeditedReportingDone_DropDownList.CssClass = CssClassFailure
-            ExpeditedReportingDone_DropDownList.ToolTip = ExpeditedReportingConsistencyValidationFailToolTip
-            ExpeditedReportingDate_Textbox.CssClass = CssClassFailure
-            ExpeditedReportingDate_Textbox.ToolTip = ExpeditedReportingConsistencyValidationFailToolTip
-            args.IsValid = False
-        ElseIf ValidationResult = "Inconsistency with invalid date" Then
-            ExpeditedReportingRequired_DropDownList.CssClass = CssClassFailure
-            ExpeditedReportingRequired_DropDownList.ToolTip = ExpeditedReportingConsistencyValidationFailToolTip
-            ExpeditedReportingDone_DropDownList.CssClass = CssClassFailure
-            ExpeditedReportingDone_DropDownList.ToolTip = ExpeditedReportingConsistencyValidationFailToolTip
-            ExpeditedReportingDate_Textbox.CssClass = CssClassFailure
-            ExpeditedReportingDate_Textbox.ToolTip = DateValidationFailToolTip
-            args.IsValid = False
+        'Determine if expedited reporting date was entered
+        Dim ExpeditedReportingDateEntered As Boolean = False
+        If ExpeditedReportingDate_Textbox.Text <> String.Empty Then
+            ExpeditedReportingDateEntered = True
         End If
-    End Sub
-
-    Protected Sub ExpeditedReportingDate_Textbox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
-        If DateValidator(ExpeditedReportingDate_Textbox) = True Then
+        'Determine if expedited reporting date is valid
+        Dim ExpeditedReportingDateValid As Boolean = True
+        If ExpeditedReportingDateEntered = False Then
+            ExpeditedReportingDateValid = True
+        ElseIf ExpeditedReportingDateEntered = True And DateValidator(ExpeditedReportingDate_Textbox) = True Then
+            ExpeditedReportingDateValid = True
+        Else
+            ExpeditedReportingDateValid = False
+        End If
+        'Determine if expedited reporting is required
+        Dim ExpeditedReportingRequired As Boolean = False
+        If ExpeditedReportingRequired_DropDownList.SelectedValue = 1 Then
+            ExpeditedReportingRequired = True
+        End If
+        'Determine if expedited reporting was done
+        Dim ExpeditedReportingDone As Boolean = False
+        If ExpeditedReportingDone_DropDownList.SelectedValue = 1 Then
+            ExpeditedReportingDone = True
+        End If
+        'Determine if entries are consistent
+        If ExpeditedReportingRequired = True And ExpeditedReportingDone = True And ExpeditedReportingDateEntered = True And ExpeditedReportingDateValid = True Then
+            ExpeditedReportingRequired_DropDownList.CssClass = CssClassSuccess
+            ExpeditedReportingRequired_DropDownList.ToolTip = String.Empty
+            ExpeditedReportingDone_DropDownList.CssClass = CssClassSuccess
+            ExpeditedReportingDone_DropDownList.ToolTip = String.Empty
+            ExpeditedReportingDate_Textbox.CssClass = CssClassSuccess
+            ExpeditedReportingDate_Textbox.ToolTip = String.Empty
+            args.IsValid = True
+        ElseIf ExpeditedReportingRequired = False And ExpeditedReportingDone = False And ExpeditedReportingDateEntered = False Then
+            ExpeditedReportingRequired_DropDownList.CssClass = CssClassSuccess
+            ExpeditedReportingRequired_DropDownList.ToolTip = String.Empty
+            ExpeditedReportingDone_DropDownList.CssClass = CssClassSuccess
+            ExpeditedReportingDone_DropDownList.ToolTip = String.Empty
             ExpeditedReportingDate_Textbox.CssClass = CssClassSuccess
             ExpeditedReportingDate_Textbox.ToolTip = String.Empty
             args.IsValid = True
         Else
+            ExpeditedReportingRequired_DropDownList.CssClass = CssClassFailure
+            ExpeditedReportingRequired_DropDownList.ToolTip = ExpeditedReportingConsistencyValidationFailToolTip
+            ExpeditedReportingDone_DropDownList.CssClass = CssClassFailure
+            ExpeditedReportingDone_DropDownList.ToolTip = ExpeditedReportingConsistencyValidationFailToolTip
             ExpeditedReportingDate_Textbox.CssClass = CssClassFailure
-            ExpeditedReportingDate_Textbox.ToolTip = DateValidationFailToolTip
+            If ExpeditedReportingDateValid = True Then
+                ExpeditedReportingDate_Textbox.ToolTip = ExpeditedReportingConsistencyValidationFailToolTip
+            Else
+                ExpeditedReportingDate_Textbox.ToolTip = DateValidationFailToolTip
+            End If
             args.IsValid = False
         End If
     End Sub

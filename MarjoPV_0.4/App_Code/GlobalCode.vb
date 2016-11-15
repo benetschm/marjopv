@@ -1072,44 +1072,4 @@ Public Class GlobalCode
         Return Result
     End Function
 
-    Public Shared Function ExpediteReportingConsistencyValidator(ExpeditedReportingRequired_DropDownList As DropDownList, ExpeditedReportingDone_DropDownList As DropDownList, ExpeditedReportingDate_Textbox As TextBox) As String
-        Dim ExpeditedReportingDateEntered As Boolean = False
-        Dim ExpeditedReportingDateValid As Boolean = True 'ExpeditedReportingDateValid set to true by default as non-entry is valid for expedited reporting date
-        If ExpeditedReportingDate_Textbox.Text <> String.Empty Then 'If an expedited reporting date was entered
-            ExpeditedReportingDateEntered = True
-            If DateValidator(ExpeditedReportingDate_Textbox) = True Then 'If a valid expedited reporting date was entered
-                ExpeditedReportingDateValid = True
-            Else 'If an invalid expedited reporting date was entered
-                ExpeditedReportingDateValid = False
-            End If
-        Else 'If no expedited reporting date was entered
-            ExpeditedReportingDateEntered = False
-        End If
-        Dim ExpeditedReportingRequired As Boolean = False
-        If ExpeditedReportingRequired_DropDownList.SelectedValue = 1 Then
-            ExpeditedReportingRequired = True
-        End If
-        Dim ExpeditedReportingDone As Boolean = False
-        If ExpeditedReportingDone_DropDownList.SelectedValue = 1 Then
-            ExpeditedReportingDone = True
-        End If
-        If ExpeditedReportingRequired = True And ExpeditedReportingDone = False And ExpeditedReportingDateEntered = False And ExpeditedReportingDateValid = True Then 'If expedited reporting is required, but was not done and no expedited reporting date was entered
-            Return "Expedited reporting required, not done, no date entered"
-        ElseIf ExpeditedReportingRequired = True And ExpeditedReportingDone = True And ExpeditedReportingDateEntered = True Then 'If expedited reporting is required and was done and an expedited reporting date was entered
-            If ExpeditedReportingDateValid = True Then 'If expedited reporting date is valid
-                Return "Expedited reporting required, done, valid date entered"
-            ElseIf ExpeditedReportingDateValid = False Then 'If expedited reporting date is valid
-                Return "Expedited reporting required, done, invalid date entered"
-            End If
-        ElseIf ExpeditedReportingRequired = False And ExpeditedReportingDone = False And ExpeditedReportingDateEntered = False Then 'If expedited reporting is not required, was not done and no expedited reporting date was entered
-            Return "Expedited reporting not required, not done, no date entered"
-        Else 'If expedited reporting is not required, but was done and/or there is an inconsistency between expedited reporting done and expedited reporting date entries
-            If ExpeditedReportingDateValid = True Then
-                Return "Inconsistency with valid date"
-            ElseIf ExpeditedReportingDateValid = False Then
-                Return "Inconsistency with invalid date"
-            End If
-        End If
-    End Function
-
 End Class
