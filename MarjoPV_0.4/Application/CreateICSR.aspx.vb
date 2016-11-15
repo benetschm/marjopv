@@ -45,10 +45,10 @@ Partial Class Application_CreateICSR
         End If
     End Sub
 
-    'Protected Sub ReturnToICSROverview() Handles Cancel_Button.Click, ReturnToICSROverview_Button.Click
-    'Dim CurrentICSR_ID As Integer = ICSRID_HiddenField.Value
-    'Response.Redirect("~/Application/ICSROverview.aspx?ICSRID=" & CurrentICSR_ID)
-    'End Sub
+    Protected Sub ReturnToICSROverview() Handles Cancel_Button.Click, ReturnToICSROverview_Button.Click
+        Dim CurrentICSR_ID As Integer = ICSRID_HiddenField.Value
+        Response.Redirect("~/Application/ICSROverview.aspx?ICSRID=" & CurrentICSR_ID)
+    End Sub
 
     Protected Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
         Response.Redirect("~/Application/ICSRs.aspx")
