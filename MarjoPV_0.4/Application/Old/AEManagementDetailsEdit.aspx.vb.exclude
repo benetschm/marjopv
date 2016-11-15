@@ -1,0 +1,1326 @@
+﻿Imports MarjoPVModel
+Imports GlobalVariables
+Imports GlobalCode
+Imports System.IO
+Imports System.Data
+
+Partial Class Application_AEManagementDetailsEdit
+    Inherits System.Web.UI.Page
+
+    Protected Sub Page_Load(sender As Object, e As EventArgs) Handles Me.Load
+        If Page.IsPostBack = False Then
+            If Login_Status = True Then
+                'Store AE_ID from QueryString in Variable
+                Dim Query_AE_ID As Integer = Request.QueryString("AE_ID")
+                'Using LINQ to Entities
+                Using myEntities As New MarjoPVEntities()
+                    'Load Current AE details (excluding ConDis and MedHist)
+                    Dim Current_AE_Details = (From AED In myEntities.AEs
+                                              Join S In myEntities.AE_Statuses On AED.AE_Status_ID Equals S.AE_Status_ID
+                                              Where AED.AE_ID = Query_AE_ID
+                                              Select AED, S).SingleOrDefault()
+                    'Check Logged In User Authorization to view Current AE
+                    Dim Current_User_Authorized As Boolean = False
+                    For Each item In LoggedIn_MarjoPVUser_Orgnaizations
+                        If item = Current_AE_Details.AED.AE_Organization_ID Then
+                            Current_User_Authorized = True
+                        End If
+                    Next
+                    If Current_User_Authorized = True Then
+                        'Populate AE_Details_Title Label
+                        AE_Details_Title.Text = "Edit Adverse Event " & Query_AE_ID
+                        'Determine valid status update options
+                        Dim StatusUpdateOptions = (From SUO In myEntities.CanUpdateStatus
+                                                   Join S In myEntities.AE_Statuses On SUO.UpdateTo_Status_ID Equals S.AE_Status_ID
+                                                   Join CR In myEntities.MarjoPVUsersToOrganizationsAndRoles On SUO.Role_ID Equals CR.Role_ID
+                                                   Where CR.MarjoPVUser_ID = LoggedIn_MarjoPVUser_ID And CR.Organization_ID = Current_AE_Details.AED.AE_Organization_ID And SUO.UpdateFrom_Status_ID = Current_AE_Details.AED.AE_Status_ID
+                                                   Select SUO, S).Distinct()
+                        'Generate AE_Status_Option_DataTable with current AE status and status update options
+                        Dim AE_Status_Option_DataTable As New DataTable()
+                        AE_Status_Option_DataTable.Columns.AddRange(New DataColumn(1) {
+                                                                    New DataColumn("AE_Status_ID", Type.GetType("System.Int32")),
+                                                                    New DataColumn("AE_Status_Name", Type.GetType("System.String"))
+                                                                    })
+                        AE_Status_Option_DataTable.Rows.Add(
+                            Current_AE_Details.AED.AE_Status_ID,
+                            Display_Database_Contents(Current_AE_Details.S.AE_Status_Name)
+                            )
+                        For Each item In StatusUpdateOptions
+                            AE_Status_Option_DataTable.Rows.Add(
+                                item.SUO.UpdateTo_Status_ID,
+                                Display_Database_Contents(item.S.AE_Status_Name)
+                                )
+                        Next
+                        AE_Status_Option_DataTable.DefaultView.Sort = "AE_Status_ID ASC"
+                        'Populate Dropdownlist with AE_Status_Option_DataTable contents
+                        AE_Status.DataSource = AE_Status_Option_DataTable
+                        AE_Status.DataValueField = AE_Status_Option_DataTable.Columns(0).ToString
+                        AE_Status.DataTextField = AE_Status_Option_DataTable.Columns(1).ToString
+                        AE_Status.DataBind()
+                        'Populate form textboxes with current AE data from database if data is available
+                        AE_Status.SelectedValue = Current_AE_Details.AED.AE_Status_ID
+                        AE_Initial_Setup_Date.Text = Display_Database_Contents(Current_AE_Details.AED.AE_Initial_Setup_Date)
+                        AE_Due_Date.Text = Display_Database_Contents(Current_AE_Details.AED.AE_Due_Date)
+                        AE_Next_Step.Text = Display_Database_Contents(Current_AE_Details.AED.AE_Next_Step)
+                        AE_Next_Step_Due_Date.Text = Display_Database_Contents(Current_AE_Details.AED.AE_Next_Step_Due_Date)
+                        AE_CIOMS_Diagnosis.Text = Display_Database_Contents(Current_AE_Details.AED.AE_CIOMS_Diagnosis)
+                        AE_CIOMS_Start_Date.Text = Display_Database_Contents(Current_AE_Details.AED.AE_CIOMS_Start_Date)
+                        AE_CIOMS_End_Date.Text = Display_Database_Contents(Current_AE_Details.AED.AE_CIOMS_End_Date)
+                        AE_Suspected_Drug.Text = Display_Database_Contents(Current_AE_Details.AED.AE_Suspected_Drug)
+                        AE_Narrative.Text = Display_Database_Contents(Current_AE_Details.AED.AE_Narrative)
+                        'Collect Disease History Details of Current AE from database and populate CIOMS Form
+                        Dim Current_AE_DisHist = (From DH In myEntities.DisHists
+                                                      Where DH.AE_ID = Query_AE_ID
+                                                      Select DH).Distinct()
+                        Dim DisHist_DataTable As New DataTable()
+                        DisHist_DataTable.Columns.AddRange(New DataColumn(4) {
+                                                   New DataColumn("DisHist_ID"),
+                                                   New DataColumn("DisHist_Name"),
+                                                   New DataColumn("DisHist_Start"),
+                                                   New DataColumn("DisHist_End"),
+                                                   New DataColumn("DisHist_Sort_Order", Type.GetType("System.Int32"))
+                                                   })
+                        For Each item In Current_AE_DisHist
+                            DisHist_DataTable.Rows.Add(
+                                Display_Database_Contents(item.DisHist_ID),
+                                Display_Database_Contents(item.DisHist_Name),
+                                Display_Database_Contents(item.DisHist_Start),
+                                Display_Database_Contents(item.DisHist_End),
+                                item.DisHist_ID
+                                )
+                        Next
+                        DisHist_DataTable.DefaultView.Sort = "DisHist_Sort_Order"
+                        DisHistRepeater.DataSource = DisHist_DataTable
+                        DisHistRepeater.DataBind()
+                        'Collect Medical History Details of Current AE from database and populate CIOMS Form
+                        Dim Current_AE_MedHist = (From MH In myEntities.MedHists
+                                                      Where MH.AE_ID = Query_AE_ID
+                                                      Select MH).Distinct()
+                        Dim MedHist_DataTable As New DataTable()
+                        MedHist_DataTable.Columns.AddRange(New DataColumn(4) {
+                                                   New DataColumn("MedHist_ID"),
+                                                   New DataColumn("MedHist_Name"),
+                                                   New DataColumn("MedHist_Start"),
+                                                   New DataColumn("MedHist_End"),
+                                                   New DataColumn("MedHist_Sort_Order", Type.GetType("System.Int32"))
+                                                   })
+                        For Each item In Current_AE_MedHist
+                            MedHist_DataTable.Rows.Add(
+                            Display_Database_Contents(item.MedHist_ID),
+                            Display_Database_Contents(item.MedHist_Name),
+                            Display_Database_Contents(item.MedHist_Start),
+                            Display_Database_Contents(item.MedHist_End),
+                                item.MedHist_ID
+                                )
+                        Next
+                        MedHist_DataTable.DefaultView.Sort = "MedHist_Sort_Order"
+                        MedHistRepeater.DataSource = MedHist_DataTable
+                        MedHistRepeater.DataBind()
+                        'Load Attached Files for current AE
+                        Dim Current_AE_AttachedFiles = (From AF In myEntities.AttachedFiles
+                                                        Join AE In myEntities.AEs On AF.AttachedFile_AE_ID Equals AE.AE_ID
+                                                        Where AF.AttachedFile_AE_ID = Query_AE_ID And AF.AttachedFile_Removed = False
+                                                        Select AF, AE).Distinct()
+                        Dim Attached_Files_DataTable As New DataTable()
+                        Attached_Files_DataTable.Columns.AddRange(New DataColumn(7) {
+                                                                   New DataColumn("AttachedFile_ID", Type.GetType("System.Int32")),
+                                                                   New DataColumn("AttachedFile_FileName", Type.GetType("System.String")),
+                                                                   New DataColumn("AttachedFile_Date", Type.GetType("System.String")),
+                                                                   New DataColumn("AttachedFile_Organization_ID", Type.GetType("System.String")),
+                                                                   New DataColumn("AE_ID", Type.GetType("System.String")),
+                                                                   New DataColumn("AttachedFile_GUID", Type.GetType("System.String")),
+                                                                   New DataColumn("AttachedFile_FileExtension", Type.GetType("System.String")),
+                                                                   New DataColumn("AttachedFile_Sort_Order", Type.GetType("System.Int32"))
+                                                                   })
+                        For Each item In Current_AE_AttachedFiles
+                            Attached_Files_DataTable.Rows.Add(
+                                Display_Database_Contents(item.AF.AttachedFile_ID),
+                                Display_Database_Contents(item.AF.AttachedFile_Name),
+                                Display_Database_Contents(item.AF.AttachedFile_Timepoint),
+                                Display_Database_Contents(item.AE.AE_Organization_ID),
+                                Display_Database_Contents(item.AE.AE_ID),
+                                Display_Database_Contents(item.AF.AttachedFile_GUID),
+                                Display_Database_Contents(item.AF.AttachedFile_Extension),
+                                item.AF.AttachedFile_ID
+                                )
+                        Next
+                        Attached_Files_DataTable.DefaultView.Sort = "AttachedFile_Sort_Order DESC"
+                        Attached_Files_Repeater.DataSource = Attached_Files_DataTable
+                        Attached_Files_Repeater.DataBind()
+                        'Enable Textboxes if current user has appriopriate edit rights
+                        Dim CanEditInputs = (From R In myEntities.Roles
+                                             Join UOR In myEntities.MarjoPVUsersToOrganizationsAndRoles On R.Role_ID Equals UOR.Role_ID
+                                             Join AE In myEntities.AEs On UOR.Organization_ID Equals AE.AE_Organization_ID
+                                             Where AE.AE_ID = Query_AE_ID And UOR.MarjoPVUser_ID = LoggedIn_MarjoPVUser_ID
+                                             Select R).Distinct()
+                        For Each item In CanEditInputs
+                            If item.Can_Edit_AE_Initial_Setup_Date = True Then
+                                AE_Initial_Setup_Date.Enabled = True
+                            End If
+                            If item.Can_Edit_AE_Narrative = True Then
+                                AE_Narrative.Enabled = True
+                            End If
+                            If item.Can_Edit_AE_Due_Date = True Then
+                                AE_Due_Date.Enabled = True
+                            End If
+                            If item.Can_Edit_AE_Next_Step = True Then
+                                AE_Next_Step.Enabled = True
+                            End If
+                            If item.Can_Edit_AE_Next_Step_Due_Date = True Then
+                                AE_Next_Step_Due_Date.Enabled = True
+                            End If
+                            If item.Can_Edit_AE_CIOMS_Diagnosis = True Then
+                                AE_CIOMS_Diagnosis.Enabled = True
+                            End If
+                            If item.Can_Edit_AE_CIOMS_Start_Date = True Then
+                                AE_CIOMS_Start_Date.Enabled = True
+                            End If
+                            If item.Can_Edit_AE_CIOMS_End_Date = True Then
+                                AE_CIOMS_End_Date.Enabled = True
+                            End If
+                            If item.Can_Edit_AE_Suspected_Drug = True Then
+                                AE_Suspected_Drug.Enabled = True
+                            End If
+                            If item.Can_Add_DisHist_Entry = True Then
+                                New_DisHist_Name_01.Enabled = True
+                                New_DisHist_Start_01.Enabled = True
+                                New_DisHist_End_01.Enabled = True
+                                New_DisHist_Name_02.Enabled = True
+                                New_DisHist_Start_02.Enabled = True
+                                New_DisHist_End_02.Enabled = True
+                                New_DisHist_Name_03.Enabled = True
+                                New_DisHist_Start_03.Enabled = True
+                                New_DisHist_End_03.Enabled = True
+                            End If
+                            If item.Can_Edit_DisHist_Name = True Then
+                                For Each DHItem In DisHistRepeater.Items
+                                    Dim Current_DisHist_Name As TextBox = DHItem.FindControl("DisHist_Name")
+                                    Current_DisHist_Name.Enabled = True
+                                Next
+                            End If
+                            If item.Can_Edit_DisHist_Start = True Then
+                                For Each DHItem In DisHistRepeater.Items
+                                    Dim Current_DisHist_Start As TextBox = DHItem.FindControl("DisHist_Start")
+                                    Current_DisHist_Start.Enabled = True
+                                Next
+                            End If
+                            If item.Can_Edit_DisHist_End = True Then
+                                For Each DHItem In DisHistRepeater.Items
+                                    Dim Current_DisHist_End As TextBox = DHItem.FindControl("DisHist_End")
+                                    Current_DisHist_End.Enabled = True
+                                Next
+                            End If
+                            If item.Can_Delete_DisHist_Entry = True Then
+                                For Each DHItem In DisHistRepeater.Items
+                                    Dim Remove_Current_DisHist_Dataset As CheckBox = DHItem.FindControl("Remove_DisHist_Dataset_Checkbox")
+                                    Remove_Current_DisHist_Dataset.Enabled = True
+                                Next
+                            End If
+                            If item.Can_Add_MedHist_Entry = True Then
+                                New_MedHist_Name_01.Enabled = True
+                                New_MedHist_Start_01.Enabled = True
+                                New_MedHist_End_01.Enabled = True
+                                New_MedHist_Name_02.Enabled = True
+                                New_MedHist_Start_02.Enabled = True
+                                New_MedHist_End_02.Enabled = True
+                                New_MedHist_Name_03.Enabled = True
+                                New_MedHist_Start_03.Enabled = True
+                                New_MedHist_End_03.Enabled = True
+                            End If
+                            If item.Can_Edit_MedHist_Name = True Then
+                                For Each MHItem In MedHistRepeater.Items
+                                    Dim Current_MedHist_Name As TextBox = MHItem.FindControl("MedHist_Name")
+                                    Current_MedHist_Name.Enabled = True
+                                Next
+                            End If
+                            If item.Can_Edit_MedHist_Start = True Then
+                                For Each MHItem In MedHistRepeater.Items
+                                    Dim Current_MedHist_Start As TextBox = MHItem.FindControl("MedHist_Start")
+                                    Current_MedHist_Start.Enabled = True
+                                Next
+                            End If
+                            If item.Can_Edit_MedHist_End = True Then
+                                For Each MHItem In MedHistRepeater.Items
+                                    Dim Current_MedHist_End As TextBox = MHItem.FindControl("MedHist_End")
+                                    Current_MedHist_End.Enabled = True
+                                Next
+                            End If
+                            If item.Can_Delete_MedHist_Entry = True Then
+                                For Each MHItem In MedHistRepeater.Items
+                                    Dim Remove_Current_MedHist_Dataset As CheckBox = MHItem.FindControl("Remove_MedHist_Dataset_Checkbox")
+                                    Remove_Current_MedHist_Dataset.Enabled = True
+                                Next
+                            End If
+                            If item.Can_Add_Journal_Entry_Content = True Then
+                                New_Journal_Entry_Content.Enabled = True
+                            End If
+                            If item.Can_Add_Attached_File = True Then
+                                AttachedFileUpload.Enabled = True
+                            End If
+                            If item.Can_Delete_Attached_File = True Then
+                                For Each AFItem In Attached_Files_Repeater.Items
+                                    Dim AttachedFileDelete As CheckBox = AFItem.FindControl("AttachedFileDelete_Checkbox")
+                                    AttachedFileDelete.Enabled = True
+                                Next
+                            End If
+                        Next
+                        'Collect Journal Entry Details of Current AE from database and populate Journal
+                        Dim Current_AE_Journal = (From AEJ In myEntities.Journal_Entries
+                                                      Join U In myEntities.MarjoPVUsers On AEJ.Journal_Entry_User_ID Equals U.MarjoPV_User_ID
+                                                      Order By AEJ.Journal_Entry_ID Descending
+                                                      Where AEJ.AE_ID = Query_AE_ID
+                                                      Select AEJ, U).Distinct()
+                            Dim Journal_DataTable As New DataTable()
+                            Journal_DataTable.Columns.AddRange(New DataColumn(4) {
+                                                                   New DataColumn("Journal_Entry_User_Name"),
+                                                                   New DataColumn("Journal_Entry_Date"),
+                                                                   New DataColumn("Journal_Entry_Time"),
+                                                                   New DataColumn("Journal_Entry_Content"),
+                                                                   New DataColumn("Journal_Sort_Order", Type.GetType("System.Int32"))
+                                                                   })
+                            For Each item In Current_AE_Journal
+                                Journal_DataTable.Rows.Add(
+                            Display_Database_Contents(item.U.MarjoPVUser_Full_Name),
+                            Display_Database_Contents(item.AEJ.Journal_Entry_Datetime.ToShortDateString),
+                            Display_Database_Contents(item.AEJ.Journal_Entry_Datetime.ToShortTimeString),
+                            Display_Database_Contents(item.AEJ.Journal_Entry_Content),
+                            item.AEJ.Journal_Entry_ID
+                            )
+                            Next
+                            Journal_DataTable.DefaultView.Sort = "Journal_Sort_Order DESC"
+                            JournalRepeater.DataSource = Journal_DataTable
+                            JournalRepeater.DataBind()
+                        Else
+                            'Populate AE_Details_Title Label
+                            AE_Details_Title.Text = "You are not authorized to view the requested data. If you think this is a mistake, please contact the Marjo PV administration team."
+                        Content_Tabs.Visible = False
+                        UpdateAEDetails.Visible = False
+                    End If
+                End Using
+            Else
+                Response.Redirect("~/Account/Login.aspx?ReturnUrl=" & VirtualPathUtility.ToAbsolute("~/") & "Application/AEManagementDetailsEdit.aspx?AE_ID=" & Request.QueryString("AE_ID"))
+            End If
+        End If
+    End Sub
+
+    Protected Sub AttachedFileLinkbutton_Click(sender As Object, e As EventArgs)
+        'Make linkbutton of clicked item accessible
+        Dim AttachedFileLinkbutton As LinkButton = CType(sender, LinkButton)
+        'Store physical document path to variable
+        Dim commandArgument As String = sender.CommandArgument
+        Dim path As String = Server.MapPath(commandArgument)
+        'Create new FileInfo object for current file
+        Dim file As System.IO.FileInfo = New System.IO.FileInfo(path)
+        Response.Clear()
+        Response.AddHeader("Content-Disposition", "attachment; filename=" & AttachedFileLinkbutton.Text)
+        Response.AddHeader("Content-Length", file.Length.ToString())
+        Response.ContentType = "application/octet-stream"
+        Response.WriteFile(file.Name)
+        Response.End()
+    End Sub
+
+    Protected Sub Remove_DisHist_Dataset_Checkbox_CheckedChanged(sender As Object, e As EventArgs)
+        For Each rowitem In DisHistRepeater.Items
+            If (DirectCast(rowitem.FindControl("Remove_DisHist_Dataset_Checkbox"), CheckBox).Checked = True) Then
+                DirectCast(rowitem.FindControl("Remove_DisHist_Dataset_Checkbox"), CheckBox).CssClass = "btn btn-danger btn-xs"
+                DirectCast(rowitem.FindControl("DisHist_Name"), TextBox).ReadOnly = "true"
+                DirectCast(rowitem.FindControl("DisHist_Start"), TextBox).ReadOnly = "true"
+                DirectCast(rowitem.FindControl("DisHist_End"), TextBox).ReadOnly = "true"
+            ElseIf (DirectCast(rowitem.FindControl("Remove_DisHist_Dataset_Checkbox"), CheckBox).Checked = False) Then
+                DirectCast(rowitem.FindControl("Remove_DisHist_Dataset_Checkbox"), CheckBox).CssClass = "btn btn-success btn-xs"
+                DirectCast(rowitem.FindControl("DisHist_Name"), TextBox).ReadOnly = "false"
+                DirectCast(rowitem.FindControl("DisHist_Start"), TextBox).ReadOnly = "false"
+                DirectCast(rowitem.FindControl("DisHist_End"), TextBox).ReadOnly = "false"
+            End If
+        Next
+    End Sub
+
+    Protected Sub Remove_MedHist_Dataset_Checkbox_CheckedChanged(sender As Object, e As EventArgs)
+        For Each rowitem In MedHistRepeater.Items
+            If (DirectCast(rowitem.FindControl("Remove_MedHist_Dataset_Checkbox"), CheckBox).Checked = True) Then
+                DirectCast(rowitem.FindControl("Remove_MedHist_Dataset_Checkbox"), CheckBox).CssClass = "btn btn-danger btn-xs"
+                DirectCast(rowitem.FindControl("MedHist_Name"), TextBox).ReadOnly = "true"
+                DirectCast(rowitem.FindControl("MedHist_Start"), TextBox).ReadOnly = "true"
+                DirectCast(rowitem.FindControl("MedHist_End"), TextBox).ReadOnly = "true"
+            ElseIf (DirectCast(rowitem.FindControl("Remove_MedHist_Dataset_Checkbox"), CheckBox).Checked = False) Then
+                DirectCast(rowitem.FindControl("Remove_MedHist_Dataset_Checkbox"), CheckBox).CssClass = "btn btn-success btn-xs"
+                DirectCast(rowitem.FindControl("MedHist_Name"), TextBox).ReadOnly = "false"
+                DirectCast(rowitem.FindControl("MedHist_Start"), TextBox).ReadOnly = "false"
+                DirectCast(rowitem.FindControl("MedHist_End"), TextBox).ReadOnly = "false"
+            End If
+        Next
+    End Sub
+
+    Protected Sub AttachedFileDelete_Checkbox_CheckedChanged(sender As Object, e As EventArgs)
+        For Each item In Attached_Files_Repeater.Items
+            Dim AttachedFileDelete_Checkbox As CheckBox = item.FindControl("AttachedFileDelete_Checkbox")
+            Dim AttachedFileDelete_Label As Label = item.FindControl("AttachedFileDelete_Label")
+            If AttachedFileDelete_Checkbox.Checked = True Then
+                AttachedFileDelete_Checkbox.CssClass = "btn btn-danger btn-xs"
+                AttachedFileDelete_Label.Text = "Marked for Deletion"
+            ElseIf AttachedFileDelete_Checkbox.Checked = False Then
+                AttachedFileDelete_Checkbox.CssClass = "btn btn-success btn-xs"
+                AttachedFileDelete_Label.Text = "Check to Delete"
+            End If
+        Next
+    End Sub
+
+    Protected Sub AE_Status_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If AE_Status.SelectedValue <> 0 Then
+            AE_Status.CssClass = "form-control alert-success"
+            AE_Status.ToolTip = ""
+            args.IsValid = True
+        Else
+            AE_Status.CssClass = "form-control alert-danger"
+            AE_Status.ToolTip = "Please make sure you are selecting a valid status"
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub AE_Initial_Setup_Date_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If IsValidDate(AE_Initial_Setup_Date.Text) = True Or AE_Initial_Setup_Date.Text = String.Empty Then
+            AE_Initial_Setup_Date.CssClass = "form-control alert-success"
+            AE_Initial_Setup_Date.ToolTip = ""
+            args.IsValid = True
+        Else
+            AE_Initial_Setup_Date.CssClass = "form-control alert-danger"
+            AE_Initial_Setup_Date.ToolTip = "Please make sure you are entering a valid date"
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub AE_Due_Date_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If IsValidDate(AE_Due_Date.Text) = True Or AE_Due_Date.Text = String.Empty Then
+            AE_Due_Date.CssClass = "form-control alert-success"
+            AE_Due_Date.ToolTip = ""
+            args.IsValid = True
+        Else
+            AE_Due_Date.CssClass = "form-control alert-danger"
+            AE_Due_Date.ToolTip = "Please make sure you are entering a valid date"
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub AE_Next_Step_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If AE_Next_Step.Text <> String.Empty Or AE_Next_Step.Text = String.Empty Then
+            AE_Next_Step.CssClass = "form-control alert-success"
+            AE_Next_Step.ToolTip = ""
+            args.IsValid = True
+        Else
+            AE_Next_Step.CssClass = "form-control alert-danger"
+            AE_Next_Step.ToolTip = "Please malke sure you are entering valid data"
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub AE_Next_Step_Due_Date_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If IsValidDate(AE_Next_Step_Due_Date.Text) = True Or AE_Next_Step_Due_Date.Text = String.Empty Then
+            AE_Next_Step_Due_Date.CssClass = "form-control alert-success"
+            args.IsValid = True
+        Else
+            AE_Next_Step_Due_Date.CssClass = "form-control alert-danger"
+            AE_Next_Step_Due_Date.ToolTip = "Please make sure you are entering a valid date"
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub New_Journal_Entry_Content_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_Journal_Entry_Content.Text <> String.Empty Or New_Journal_Entry_Content.Text = String.Empty Then
+            New_Journal_Entry_Content.CssClass = "form-control alert-success"
+            New_Journal_Entry_Content.ToolTip = ""
+            args.IsValid = True
+        Else
+            New_Journal_Entry_Content.CssClass = "form-control alert-danger"
+            New_Journal_Entry_Content.ToolTip = "Please malke sure you are entering valid data"
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub AttachedFileUpload_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If AttachedFileUpload.HasFile Then
+            Dim UploadFileName As String = AttachedFileUpload.PostedFile.FileName
+            Dim UploadFileSize As Integer = AttachedFileUpload.PostedFile.ContentLength
+            Dim Extension As String = UploadFileName.Substring(UploadFileName.LastIndexOf(".") + 1).ToLower()
+            If (Extension = "pdf" And UploadFileSize < 2000001) Then
+                AttachedFileUpload.CssClass = "form-control alert-success"
+                AttachedFileUpload.ToolTip = "File Size: " & AttachedFileUpload.PostedFile.ContentLength & " Bytes"
+                args.IsValid = True
+            ElseIf Extension <> "pdf" And UploadFileName <> String.Empty Then
+                AttachedFileUpload.CssClass = "form-control alert-danger"
+                AttachedFileUpload.ToolTip = "Please make sure you are uploading a pdf file as this is the only accepted format"
+                args.IsValid = False
+            ElseIf UploadFileSize > 2000000 Then
+                AttachedFileUpload.CssClass = "form-control alert-danger"
+                AttachedFileUpload.ToolTip = "The file selected for upload exceeds the size limit of 2 MB and can therefore not be uploaded"
+                args.IsValid = False
+            Else
+                AttachedFileUpload.CssClass = "form-control alert-danger"
+                AttachedFileUpload.ToolTip = "The file selected for upload is not valid and can therefore not be uploaded"
+                args.IsValid = False
+            End If
+        Else
+            AttachedFileUpload.CssClass = "form-control alert-success"
+            AttachedFileUpload.ToolTip = "No file selected for upload"
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub AE_CIOMS_Diagnosis_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If AE_CIOMS_Diagnosis.Text <> String.Empty Then
+            AE_CIOMS_Diagnosis.CssClass = "form-control alert-success"
+            AE_CIOMS_Diagnosis.ToolTip = ""
+            args.IsValid = True
+        ElseIf AE_CIOMS_Diagnosis.Text = String.Empty
+            AE_CIOMS_Diagnosis.CssClass = "form-control alert-danger"
+            AE_CIOMS_Diagnosis.ToolTip = "AE Diagnosis is a required entry"
+            args.IsValid = False
+        Else
+            AE_CIOMS_Diagnosis.CssClass = "form-control alert-danger"
+            AE_CIOMS_Diagnosis.ToolTip = "Please malke sure you are entering valid data"
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub AE_CIOMS_Start_Date_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If IsValidDate(AE_CIOMS_Start_Date.Text) = True Or AE_CIOMS_Start_Date.Text = String.Empty Then
+            AE_CIOMS_Start_Date.CssClass = "form-control alert-success"
+            AE_CIOMS_Start_Date.ToolTip = ""
+            args.IsValid = True
+        Else
+            AE_CIOMS_Start_Date.CssClass = "form-control alert-danger"
+            AE_CIOMS_Start_Date.ToolTip = "Please make sure you are entering a valid date"
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub AE_CIOMS_End_Date_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If IsValidDate(AE_CIOMS_End_Date.Text) = True Or AE_CIOMS_End_Date.Text = String.Empty Then
+            AE_CIOMS_End_Date.CssClass = "form-control alert-success"
+            AE_CIOMS_End_Date.ToolTip = ""
+            args.IsValid = True
+        Else
+            AE_CIOMS_End_Date.CssClass = "form-control alert-danger"
+            AE_CIOMS_End_Date.ToolTip = "Please make sure you are entering a valid date"
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub AE_Suspected_Drug_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If AE_Suspected_Drug.Text <> String.Empty Then
+            AE_Suspected_Drug.CssClass = "form-control alert-success"
+            AE_Suspected_Drug.ToolTip = ""
+            args.IsValid = True
+        ElseIf AE_Suspected_Drug.Text = String.Empty Then
+            AE_Suspected_Drug.CssClass = "form-control alert-danger"
+            AE_Suspected_Drug.ToolTip = "Suspected Drug is a required entry"
+            args.IsValid = False
+        Else
+            AE_Suspected_Drug.CssClass = "form-control alert-danger"
+            AE_Suspected_Drug.ToolTip = "Please malke sure you are entering valid data"
+            args.IsValid = False
+        End If
+    End Sub
+    Protected Sub AE_Narrative_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If AE_Narrative.Text <> String.Empty Or AE_Narrative.Text = String.Empty Then
+            AE_Narrative.CssClass = "form-control alert-success"
+            AE_Narrative.ToolTip = ""
+            args.IsValid = True
+        Else
+            AE_Narrative.CssClass = "form-control alert-danger"
+            AE_Narrative.ToolTip = "Please malke sure you are entering valid data"
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub DisHist_Name_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        Dim val As Boolean = True
+        For Each item In DisHistRepeater.Items
+            Dim DisHist_Name As TextBox = item.FindControl("DisHist_Name")
+            Dim DisHist_Start As TextBox = item.FindControl("DisHist_Start")
+            Dim DisHist_End As TextBox = item.FindControl("DisHist_End")
+            Dim Remove_DisHist_Dataset_Checkbox As CheckBox = item.FindControl("Remove_DisHist_Dataset_Checkbox")
+            If DisHist_Name.Text <> String.Empty Then
+                DisHist_Name.CssClass = "form-control alert-success"
+                DisHist_Name.ToolTip = ""
+            ElseIf DisHist_Name.Text = String.Empty And DisHist_Start.Text = String.Empty And DisHist_Start.Text = String.Empty And Remove_DisHist_Dataset_Checkbox.Checked = True Then
+                DisHist_Name.CssClass = "form-control alert-success"
+                DisHist_Name.ToolTip = ""
+            ElseIf DisHist_Name.Text = String.Empty And (DisHist_Start.Text <> String.Empty Or DisHist_Start.Text <> String.Empty)
+                DisHist_Name.CssClass = "form-control alert-danger"
+                DisHist_Name.ToolTip = "Disease History Name is a required entry"
+                val = False
+            ElseIf DisHist_Name.Text = String.Empty And DisHist_Start.Text = String.Empty And DisHist_Start.Text = String.Empty And Remove_DisHist_Dataset_Checkbox.Checked = False Then
+                DisHist_Name.CssClass = "form-control alert-danger"
+                DisHist_Name.ToolTip = "Disease History Name is a required entry. If you want to delete this Disease History entry, please use the 'Remove Entries' button"
+                val = False
+            Else
+                DisHist_Name.CssClass = "form-control alert-danger"
+                DisHist_Name.ToolTip = "Please make sure you are entering valid data"
+                val = False
+            End If
+        Next
+        If val = True Then
+            args.IsValid = True
+        ElseIf val = False Then
+            args.IsValid = False
+        Else
+            args.IsValid = False
+        End If
+    End Sub
+    Protected Sub DisHist_Start_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        Dim val As Boolean = True
+        For Each item In DisHistRepeater.Items
+            Dim DisHist_Start As TextBox = item.FindControl("DisHist_Start")
+            If IsValidDate(DisHist_Start.Text) = True Or DisHist_Start.Text = String.Empty Then
+                DisHist_Start.CssClass = "form-control alert-success"
+                DisHist_Start.ToolTip = ""
+            Else
+                DisHist_Start.CssClass = "form-control alert-danger"
+                DisHist_Start.ToolTip = "Please make sure you are entering a valid date"
+                val = False
+            End If
+        Next
+        If val = True Then
+            args.IsValid = True
+        ElseIf val = False Then
+            args.IsValid = False
+        Else
+            args.IsValid = False
+        End If
+    End Sub
+    Protected Sub DisHist_End_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        Dim val As Boolean = True
+        For Each item In DisHistRepeater.Items
+            Dim DisHist_End As TextBox = item.FindControl("DisHist_End")
+            If IsValidDate(DisHist_End.Text) = True Or DisHist_End.Text = String.Empty Then
+                DisHist_End.CssClass = "form-control alert-success"
+                DisHist_End.ToolTip = ""
+            Else
+                DisHist_End.CssClass = "form-control alert-danger"
+                DisHist_End.ToolTip = "Please make sure you are entering a valid date"
+                val = False
+            End If
+        Next
+        If val = True Then
+            args.IsValid = True
+        ElseIf val = False Then
+            args.IsValid = False
+        Else
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub New_DisHist_Name_01_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_DisHist_Name_01.Visible = True Then
+            If New_DisHist_Name_01.Text <> String.Empty Then
+                New_DisHist_Name_01.CssClass = "form-control alert-success"
+                New_DisHist_Name_01.ToolTip = ""
+                args.IsValid = True
+            ElseIf New_DisHist_Name_01.Text = String.Empty And New_DisHist_Start_01.Text = String.Empty And New_DisHist_End_01.Text = String.Empty Then
+                New_DisHist_Name_01.CssClass = "form-control alert-success"
+                New_DisHist_Name_01.ToolTip = ""
+                args.IsValid = True
+            ElseIf New_DisHist_Name_01.Text = String.Empty And (New_DisHist_Start_01.Text <> String.Empty Or New_DisHist_End_01.Text <> String.Empty) Then
+                New_DisHist_Name_01.CssClass = "form-control alert-danger"
+                New_DisHist_Name_01.ToolTip = "Disease History Name is a required entry"
+                args.IsValid = False
+            Else
+                New_DisHist_Name_01.CssClass = "form-control alert-danger"
+                New_DisHist_Name_01.ToolTip = "Please make sure you are entering valid data"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_DisHist_Start_01_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_DisHist_Start_01.Visible = True Then
+            If IsValidDate(New_DisHist_Start_01.Text) = True Or New_DisHist_Start_01.Text = String.Empty Then
+                New_DisHist_Start_01.CssClass = "form-control alert-success"
+                New_DisHist_Start_01.ToolTip = ""
+                args.IsValid = True
+            Else
+                New_DisHist_Start_01.CssClass = "form-control alert-danger"
+                New_DisHist_Start_01.ToolTip = "Please make sure you are entering a valid date"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_DisHist_End_01_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_DisHist_End_01.Visible = True Then
+            If IsValidDate(New_DisHist_End_01.Text) = True Or New_DisHist_End_01.Text = String.Empty Then
+                New_DisHist_End_01.CssClass = "form-control alert-success"
+                New_DisHist_End_01.ToolTip = ""
+                args.IsValid = True
+            Else
+                New_DisHist_End_01.CssClass = "form-control alert-danger"
+                New_DisHist_End_01.ToolTip = "Please make sure you are entering a valid date"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_DisHist_Name_02_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_DisHist_Name_02.Visible = True Then
+            If New_DisHist_Name_02.Text <> String.Empty Then
+                New_DisHist_Name_02.CssClass = "form-control alert-success"
+                New_DisHist_Name_02.ToolTip = ""
+                args.IsValid = True
+            ElseIf New_DisHist_Name_02.Text = String.Empty And New_DisHist_Start_02.Text = String.Empty And New_DisHist_End_02.Text = String.Empty Then
+                New_DisHist_Name_02.CssClass = "form-control alert-success"
+                New_DisHist_Name_02.ToolTip = ""
+                args.IsValid = True
+            ElseIf New_DisHist_Name_02.Text = String.Empty And (New_DisHist_Start_02.Text <> String.Empty Or New_DisHist_End_02.Text <> String.Empty) Then
+                New_DisHist_Name_02.CssClass = "form-control alert-danger"
+                New_DisHist_Name_02.ToolTip = "Disease History Name is a required entry"
+                args.IsValid = False
+            Else
+                New_DisHist_Name_02.CssClass = "form-control alert-danger"
+                New_DisHist_Name_02.ToolTip = "Please make sure you are entering valid data"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_DisHist_Start_02_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_DisHist_Start_02.Visible = True Then
+            If IsValidDate(New_DisHist_Start_02.Text) = True Or New_DisHist_Start_02.Text = String.Empty Then
+                New_DisHist_Start_02.CssClass = "form-control alert-success"
+                New_DisHist_Start_02.ToolTip = ""
+                args.IsValid = True
+            Else
+                New_DisHist_Start_02.CssClass = "form-control alert-danger"
+                New_DisHist_Start_02.ToolTip = "Please make sure you are entering a valid date"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_DisHist_End_02_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_DisHist_End_02.Visible = True Then
+            If IsValidDate(New_DisHist_End_02.Text) = True Or New_DisHist_End_02.Text = String.Empty Then
+                New_DisHist_End_02.CssClass = "form-control alert-success"
+                New_DisHist_End_02.ToolTip = ""
+                args.IsValid = True
+            Else
+                New_DisHist_End_02.CssClass = "form-control alert-danger"
+                New_DisHist_End_02.ToolTip = "Please make sure you are entering a valid date"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_DisHist_Name_03_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_DisHist_Name_03.Visible = True Then
+            If New_DisHist_Name_03.Text <> String.Empty Then
+                New_DisHist_Name_03.CssClass = "form-control alert-success"
+                New_DisHist_Name_03.ToolTip = ""
+                args.IsValid = True
+            ElseIf New_DisHist_Name_03.Text = String.Empty And New_DisHist_Start_03.Text = String.Empty And New_DisHist_End_03.Text = String.Empty Then
+                New_DisHist_Name_03.CssClass = "form-control alert-success"
+                New_DisHist_Name_03.ToolTip = ""
+                args.IsValid = True
+            ElseIf New_DisHist_Name_03.Text = String.Empty And (New_DisHist_Start_03.Text <> String.Empty Or New_DisHist_End_03.Text <> String.Empty) Then
+                New_DisHist_Name_03.CssClass = "form-control alert-danger"
+                New_DisHist_Name_03.ToolTip = "Disease History Name is a required entry"
+                args.IsValid = False
+            Else
+                New_DisHist_Name_03.CssClass = "form-control alert-danger"
+                New_DisHist_Name_03.ToolTip = "Please make sure you are entering valid data"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_DisHist_Start_03_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_DisHist_Start_03.Visible = True Then
+            If IsValidDate(New_DisHist_Start_03.Text) = True Or New_DisHist_Start_03.Text = String.Empty Then
+                New_DisHist_Start_03.CssClass = "form-control alert-success"
+                New_DisHist_Start_03.ToolTip = ""
+                args.IsValid = True
+            Else
+                New_DisHist_Start_03.CssClass = "form-control alert-danger"
+                New_DisHist_Start_03.ToolTip = "Please make sure you are entering a valid date"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_DisHist_End_03_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_DisHist_End_03.Visible = True Then
+            If IsValidDate(New_DisHist_End_03.Text) = True Or New_DisHist_End_03.Text = String.Empty Then
+                New_DisHist_End_03.CssClass = "form-control alert-success"
+                New_DisHist_End_03.ToolTip = ""
+                args.IsValid = True
+            Else
+                New_DisHist_End_03.CssClass = "form-control alert-danger"
+                New_DisHist_End_03.ToolTip = "Please make sure you are entering a valid date"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub MedHist_Name_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        Dim val As Boolean = True
+        For Each item In MedHistRepeater.Items
+            Dim MedHist_Name As TextBox = item.FindControl("MedHist_Name")
+            Dim MedHist_Start As TextBox = item.FindControl("MedHist_Start")
+            Dim MedHist_End As TextBox = item.FindControl("MedHist_End")
+            Dim Remove_MedHist_Dataset_Checkbox As CheckBox = item.FindControl("Remove_MedHist_Dataset_Checkbox")
+            If MedHist_Name.Text <> String.Empty Then
+                MedHist_Name.CssClass = "form-control alert-success"
+                MedHist_Name.ToolTip = ""
+            ElseIf MedHist_Name.Text = String.Empty And MedHist_Start.Text = String.Empty And MedHist_Start.Text = String.Empty And Remove_MedHist_Dataset_Checkbox.Checked = True Then
+                MedHist_Name.CssClass = "form-control alert-success"
+                MedHist_Name.ToolTip = ""
+            ElseIf MedHist_Name.Text = String.Empty And (MedHist_Start.Text <> String.Empty Or MedHist_Start.Text <> String.Empty)
+                MedHist_Name.CssClass = "form-control alert-danger"
+                MedHist_Name.ToolTip = "Medication History Name is a required entry"
+                val = False
+            ElseIf MedHist_Name.Text = String.Empty And MedHist_Start.Text = String.Empty And MedHist_Start.Text = String.Empty And Remove_MedHist_Dataset_Checkbox.Checked = False Then
+                MedHist_Name.CssClass = "form-control alert-danger"
+                MedHist_Name.ToolTip = "Medication History Name is a required entry. If you want to delete this Medication History entry, please use the 'Remove Entries' button"
+                val = False
+            Else
+                MedHist_Name.CssClass = "form-control alert-danger"
+                MedHist_Name.ToolTip = "Please make sure you are entering valid data"
+                val = False
+            End If
+        Next
+        If val = True Then
+            args.IsValid = True
+        ElseIf val = False Then
+            args.IsValid = False
+        Else
+            args.IsValid = False
+        End If
+    End Sub
+    Protected Sub MedHist_Start_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        Dim val As Boolean = True
+        For Each item In MedHistRepeater.Items
+            Dim MedHist_Start As TextBox = item.FindControl("MedHist_Start")
+            If IsValidDate(MedHist_Start.Text) = True Or MedHist_Start.Text = String.Empty Then
+                MedHist_Start.CssClass = "form-control alert-success"
+                MedHist_Start.ToolTip = ""
+            Else
+                MedHist_Start.CssClass = "form-control alert-danger"
+                MedHist_Start.ToolTip = "Please make sure you are entering a valid date"
+                val = False
+            End If
+        Next
+        If val = True Then
+            args.IsValid = True
+        ElseIf val = False Then
+            args.IsValid = False
+        Else
+            args.IsValid = False
+        End If
+    End Sub
+    Protected Sub MedHist_End_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        Dim val As Boolean = True
+        For Each item In MedHistRepeater.Items
+            Dim MedHist_End As TextBox = item.FindControl("MedHist_End")
+            If IsValidDate(MedHist_End.Text) = True Or MedHist_End.Text = String.Empty Then
+                MedHist_End.CssClass = "form-control alert-success"
+                MedHist_End.ToolTip = ""
+            Else
+                MedHist_End.CssClass = "form-control alert-danger"
+                MedHist_End.ToolTip = "Please make sure you are entering a valid date"
+                val = False
+            End If
+        Next
+        If val = True Then
+            args.IsValid = True
+        ElseIf val = False Then
+            args.IsValid = False
+        Else
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub New_MedHist_Name_01_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_MedHist_Name_01.Visible = True Then
+            If New_MedHist_Name_01.Text <> String.Empty Then
+                New_MedHist_Name_01.CssClass = "form-control alert-success"
+                New_MedHist_Name_01.ToolTip = ""
+                args.IsValid = True
+            ElseIf New_MedHist_Name_01.Text = String.Empty And New_MedHist_Start_01.Text = String.Empty And New_MedHist_End_01.Text = String.Empty Then
+                New_MedHist_Name_01.CssClass = "form-control alert-success"
+                New_MedHist_Name_01.ToolTip = ""
+                args.IsValid = True
+            ElseIf New_MedHist_Name_01.Text = String.Empty And (New_MedHist_Start_01.Text <> String.Empty Or New_MedHist_End_01.Text <> String.Empty) Then
+                New_MedHist_Name_01.CssClass = "form-control alert-danger"
+                New_MedHist_Name_01.ToolTip = "Medication History Name is a required entry"
+                args.IsValid = False
+            Else
+                New_MedHist_Name_01.CssClass = "form-control alert-danger"
+                New_MedHist_Name_01.ToolTip = "Please make sure you are entering valid data"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_MedHist_Start_01_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_MedHist_Start_01.Visible = True Then
+            If IsValidDate(New_MedHist_Start_01.Text) = True Or New_MedHist_Start_01.Text = String.Empty Then
+                New_MedHist_Start_01.CssClass = "form-control alert-success"
+                New_MedHist_Start_01.ToolTip = ""
+                args.IsValid = True
+            Else
+                New_MedHist_Start_01.CssClass = "form-control alert-danger"
+                New_MedHist_Start_01.ToolTip = "Please make sure you are entering a valid date"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_MedHist_End_01_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_MedHist_End_01.Visible = True Then
+            If IsValidDate(New_MedHist_End_01.Text) = True Or New_MedHist_End_01.Text = String.Empty Then
+                New_MedHist_End_01.CssClass = "form-control alert-success"
+                New_MedHist_End_01.ToolTip = ""
+                args.IsValid = True
+            Else
+                New_MedHist_End_01.CssClass = "form-control alert-danger"
+                New_MedHist_End_01.ToolTip = "Please make sure you are entering a valid date"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_MedHist_Name_02_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_MedHist_Name_02.Visible = True Then
+            If New_MedHist_Name_02.Text <> String.Empty Then
+                New_MedHist_Name_02.CssClass = "form-control alert-success"
+                New_MedHist_Name_02.ToolTip = ""
+                args.IsValid = True
+            ElseIf New_MedHist_Name_02.Text = String.Empty And New_MedHist_Start_02.Text = String.Empty And New_MedHist_End_02.Text = String.Empty Then
+                New_MedHist_Name_02.CssClass = "form-control alert-success"
+                New_MedHist_Name_02.ToolTip = ""
+                args.IsValid = True
+            ElseIf New_MedHist_Name_02.Text = String.Empty And (New_MedHist_Start_02.Text <> String.Empty Or New_MedHist_End_02.Text <> String.Empty) Then
+                New_MedHist_Name_02.CssClass = "form-control alert-danger"
+                New_MedHist_Name_02.ToolTip = "Medication History Name is a required entry"
+                args.IsValid = False
+            Else
+                New_MedHist_Name_02.CssClass = "form-control alert-danger"
+                New_MedHist_Name_02.ToolTip = "Please make sure you are entering valid data"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_MedHist_Start_02_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_MedHist_Start_02.Visible = True Then
+            If IsValidDate(New_MedHist_Start_02.Text) = True Or New_MedHist_Start_02.Text = String.Empty Then
+                New_MedHist_Start_02.CssClass = "form-control alert-success"
+                New_MedHist_Start_02.ToolTip = ""
+                args.IsValid = True
+            Else
+                New_MedHist_Start_02.CssClass = "form-control alert-danger"
+                New_MedHist_Start_02.ToolTip = "Please make sure you are entering a valid date"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_MedHist_End_02_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_MedHist_End_02.Visible = True Then
+            If IsValidDate(New_MedHist_End_02.Text) = True Or New_MedHist_End_02.Text = String.Empty Then
+                New_MedHist_End_02.CssClass = "form-control alert-success"
+                New_MedHist_End_02.ToolTip = ""
+                args.IsValid = True
+            Else
+                New_MedHist_End_02.CssClass = "form-control alert-danger"
+                New_MedHist_End_02.ToolTip = "Please make sure you are entering a valid date"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_MedHist_Name_03_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_MedHist_Name_03.Visible = True Then
+            If New_MedHist_Name_03.Text <> String.Empty Then
+                New_MedHist_Name_03.CssClass = "form-control alert-success"
+                New_MedHist_Name_03.ToolTip = ""
+                args.IsValid = True
+            ElseIf New_MedHist_Name_03.Text = String.Empty And New_MedHist_Start_03.Text = String.Empty And New_MedHist_End_03.Text = String.Empty Then
+                New_MedHist_Name_03.CssClass = "form-control alert-success"
+                New_MedHist_Name_03.ToolTip = ""
+                args.IsValid = True
+            ElseIf New_MedHist_Name_03.Text = String.Empty And (New_MedHist_Start_03.Text <> String.Empty Or New_MedHist_End_03.Text <> String.Empty) Then
+                New_MedHist_Name_03.CssClass = "form-control alert-danger"
+                New_MedHist_Name_03.ToolTip = "Medication History Name is a required entry"
+                args.IsValid = False
+            Else
+                New_MedHist_Name_03.CssClass = "form-control alert-danger"
+                New_MedHist_Name_03.ToolTip = "Please make sure you are entering valid data"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_MedHist_Start_03_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_MedHist_Start_03.Visible = True Then
+            If IsValidDate(New_MedHist_Start_03.Text) = True Or New_MedHist_Start_03.Text = String.Empty Then
+                New_MedHist_Start_03.CssClass = "form-control alert-success"
+                New_MedHist_Start_03.ToolTip = ""
+                args.IsValid = True
+            Else
+                New_MedHist_Start_03.CssClass = "form-control alert-danger"
+                New_MedHist_Start_03.ToolTip = "Please make sure you are entering a valid date"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub New_MedHist_End_03_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If New_MedHist_End_03.Visible = True Then
+            If IsValidDate(New_MedHist_End_03.Text) = True Or New_MedHist_End_03.Text = String.Empty Then
+                New_MedHist_End_03.CssClass = "form-control alert-success"
+                New_MedHist_End_03.ToolTip = ""
+                args.IsValid = True
+            Else
+                New_MedHist_End_03.CssClass = "form-control alert-danger"
+                New_MedHist_End_03.ToolTip = "Please make sure you are entering a valid date"
+                args.IsValid = False
+            End If
+        Else
+            args.IsValid = True
+        End If
+    End Sub
+
+    Protected Sub UpdateAEDetails_Click(sender As Object, e As EventArgs) Handles UpdateAEDetails.Click
+        If Page.IsValid = True Then
+            'Get current AE_ID from Querytring
+            Dim Query_AE_ID As Integer = Request.QueryString("AE_ID")
+            'Load Current AE as object
+            Using myEntities As New MarjoPVEntities()
+                Dim Current_AE = (From AE In myEntities.AEs
+                                  Join S In myEntities.AE_Statuses On AE.AE_Status_ID Equals S.AE_Status_ID
+                                  Where AE.AE_ID = Query_AE_ID
+                                  Select AE, S).SingleOrDefault()
+                'Generate new journal entry and populate with Input from New_Journal_Entry_Content Textbox 
+                Dim New_Journal_Entry As Journal_Entries = New Journal_Entries()
+                New_Journal_Entry.AE_ID = Query_AE_ID
+                New_Journal_Entry.Journal_Entry_User_ID = LoggedIn_MarjoPVUser_ID
+                New_Journal_Entry.Journal_Entry_Datetime = Now
+                New_Journal_Entry.Journal_Entry_Content = Add_Journal_Content(SubtableTypes.None, Nothing, True, False, Fields.Journal_Entry, "", New_Journal_Entry_Content.Text)
+                'Add updates to AE Details to New Journal Entry
+                New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.None, Nothing, False, False, Fields.Status, Current_AE.S.AE_Status_Name, AE_Status.SelectedItem.Text)
+                New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.None, Nothing, False, False, Fields.Initial_Setup_Date, Current_AE.AE.AE_Initial_Setup_Date, AE_Initial_Setup_Date.Text)
+                New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.None, Nothing, False, False, Fields.Due_Date, Current_AE.AE.AE_Due_Date, AE_Due_Date.Text)
+                New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.None, Nothing, False, False, Fields.Next_Step, Current_AE.AE.AE_Next_Step, AE_Next_Step.Text)
+                New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.None, Nothing, False, False, Fields.Next_Step_Due_date, Current_AE.AE.AE_Next_Step_Due_Date, AE_Next_Step_Due_Date.Text)
+                New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.None, Nothing, False, False, Fields.Diagnosis, Current_AE.AE.AE_CIOMS_Diagnosis, AE_CIOMS_Diagnosis.Text)
+                New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.None, Nothing, False, False, Fields.Start_Date, Current_AE.AE.AE_CIOMS_Start_Date, AE_CIOMS_Start_Date.Text)
+                New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.None, Nothing, False, False, Fields.End_Date, Current_AE.AE.AE_CIOMS_End_Date, AE_CIOMS_End_Date.Text)
+                New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.None, Nothing, False, False, Fields.Suspected_Drug, Current_AE.AE.AE_Suspected_Drug, AE_Suspected_Drug.Text)
+                New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.None, Nothing, False, False, Fields.Narrative, Current_AE.AE.AE_Narrative, AE_Narrative.Text)
+                'Write Inputs(CIOMS Form without DisHist And MedHist, Processing Status Data without Journal Entries) to Current AE dataset in database
+                Current_AE.AE.AE_Status_ID = AE_Status.SelectedValue
+                Current_AE.AE.AE_Initial_Setup_Date = Write_Database_Contents(Fields.Initial_Setup_Date, AE_Initial_Setup_Date.Text)
+                Current_AE.AE.AE_Due_Date = Write_Database_Contents(Fields.Due_Date, AE_Due_Date.Text)
+                Current_AE.AE.AE_Next_Step = Write_Database_Contents(Fields.Next_Step, AE_Next_Step.Text)
+                Current_AE.AE.AE_Next_Step_Due_Date = Write_Database_Contents(Fields.Next_Step_Due_date, AE_Next_Step_Due_Date.Text)
+                Current_AE.AE.AE_CIOMS_Diagnosis = Write_Database_Contents(Fields.Diagnosis, AE_CIOMS_Diagnosis.Text)
+                Current_AE.AE.AE_CIOMS_Start_Date = Write_Database_Contents(Fields.Start_Date, AE_CIOMS_Start_Date.Text)
+                Current_AE.AE.AE_CIOMS_End_Date = Write_Database_Contents(Fields.End_Date, AE_CIOMS_End_Date.Text)
+                Current_AE.AE.AE_Suspected_Drug = Write_Database_Contents(Fields.Suspected_Drug, AE_Suspected_Drug.Text)
+                Current_AE.AE.AE_Narrative = Write_Database_Contents(Fields.Narrative, AE_Narrative.Text)
+                'For Each existing DisHist entry 
+                For Each DHitem In DisHistRepeater.Items
+                    'Make controls accessible
+                    Dim Current_DisHist_ID As Label = DHitem.FindControl("DisHist_ID")
+                    Dim Current_DisHist_Name_Textbox As TextBox = DHitem.FindControl("DisHist_Name")
+                    Dim Current_DisHist_Start_Textbox As TextBox = DHitem.FindControl("DisHist_Start")
+                    Dim Current_DisHist_End_Textbox As TextBox = DHitem.FindControl("DisHist_End")
+                    Dim Remove_DisHist_Dataset_Checkbox As CheckBox = DHitem.FindControl("Remove_DisHist_Dataset_Checkbox")
+                    'Load Current DH as object
+                    Dim Current_DH = (From DH In myEntities.DisHists
+                                      Where DH.DisHist_ID = Current_DisHist_ID.Text
+                                      Select DH).SingleOrDefault()
+                    If Remove_DisHist_Dataset_Checkbox.Checked = True Then
+                        'Document Deletion of DisHist Entry in New Journal Entry
+                        New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, False, True, Fields.Name, Current_DH.DisHist_Name, String.Empty)
+                        New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, False, True, Fields.Start_Date, Current_DH.DisHist_Start, Nothing)
+                        New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, False, True, Fields.End_Date, Current_DH.DisHist_End, Nothing)
+                        'Delete Current DH from Table DisHists
+                        myEntities.DeleteObject(Current_DH)
+                    Else
+                        'Document updates to DisHist Details to New Journal Entry
+                        New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, False, False, Fields.Name, Current_DH.DisHist_Name, Current_DisHist_Name_Textbox.Text)
+                        New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, False, False, Fields.Start_Date, Current_DH.DisHist_Start, Current_DisHist_Start_Textbox.Text)
+                        New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, False, False, Fields.End_Date, Current_DH.DisHist_End, Current_DisHist_End_Textbox.Text)
+                        'Write Textbox inputs for existing DisHist entries to DiHist datasets in database
+                        Current_DH.DisHist_Name = Write_Database_Contents(Fields.Name, Current_DisHist_Name_Textbox.Text)
+                        Current_DH.DisHist_Start = Write_Database_Contents(Fields.Start_Date, Current_DisHist_Start_Textbox.Text)
+                        Current_DH.DisHist_End = Write_Database_Contents(Fields.End_Date, Current_DisHist_End_Textbox.Text)
+                    End If
+                Next
+                'If New_DisHist_Name_01 Is populated Then
+                If (New_DisHist_Name_01.Text.Trim() <> String.Empty) Then
+                    'Generate new DisHist entry for current AE and populate with Input from New_DisHist_Row_01 
+                    Dim New_DisHist_Entry_01 As DisHist = New DisHist()
+                    New_DisHist_Entry_01.AE_ID = Query_AE_ID
+                    New_DisHist_Entry_01.DisHist_Name = Write_Database_Contents(Fields.Name, New_DisHist_Name_01.Text)
+                    New_DisHist_Entry_01.DisHist_Start = Write_Database_Contents(Fields.Start_Date, New_DisHist_Start_01.Text)
+                    New_DisHist_Entry_01.DisHist_End = Write_Database_Contents(Fields.End_Date, New_DisHist_End_01.Text)
+                    myEntities.AddToDisHists(New_DisHist_Entry_01)
+                    myEntities.SaveChanges()
+                    'Get DisHist_ID of dataset that was just added
+                    Dim Current_DH = (From DH In myEntities.DisHists
+                                      Where DH.AE_ID = Query_AE_ID
+                                      Order By DH.DisHist_ID Descending
+                                      Select DH).First()
+                    'Add updates to DisHist Details to New Journal Entry
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, True, False, Fields.Name, String.Empty, Current_DH.DisHist_Name)
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, True, False, Fields.Start_Date, Nothing, Current_DH.DisHist_Start)
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, True, False, Fields.End_Date, Nothing, Current_DH.DisHist_End)
+                End If
+                'If New_DisHist_Name_02 Is populated Then
+                If (New_DisHist_Name_02.Text.Trim() <> String.Empty) Then
+                    'Generate new DisHist entry for current AE and populate with Input from New_DisHist_Row_02
+                    Dim New_DisHist_Entry_02 As DisHist = New DisHist()
+                    New_DisHist_Entry_02.AE_ID = Query_AE_ID
+                    New_DisHist_Entry_02.DisHist_Name = Write_Database_Contents(Fields.Name, New_DisHist_Name_02.Text)
+                    New_DisHist_Entry_02.DisHist_Start = Write_Database_Contents(Fields.Start_Date, New_DisHist_Start_02.Text)
+                    New_DisHist_Entry_02.DisHist_End = Write_Database_Contents(Fields.End_Date, New_DisHist_End_02.Text)
+                    myEntities.AddToDisHists(New_DisHist_Entry_02)
+                    myEntities.SaveChanges()
+                    'Get DisHist_ID of dataset that was just added
+                    Dim Current_DH = (From DH In myEntities.DisHists
+                                      Where DH.AE_ID = Query_AE_ID
+                                      Order By DH.DisHist_ID Descending
+                                      Select DH).First()
+                    'Add updates to DisHist Details to New Journal Entry
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, True, False, Fields.Name, String.Empty, Current_DH.DisHist_Name)
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, True, False, Fields.Start_Date, Nothing, Current_DH.DisHist_Start)
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, True, False, Fields.End_Date, Nothing, Current_DH.DisHist_End)
+                End If
+                'If New_DisHist_Name_03 Is populated Then
+                If (New_DisHist_Name_03.Text.Trim() <> String.Empty) Then
+                    'Generate new DisHist entry for current AE and populate with Input from New_DisHist_Row_03 
+                    Dim New_DisHist_Entry_03 As DisHist = New DisHist()
+                    New_DisHist_Entry_03.AE_ID = Query_AE_ID
+                    New_DisHist_Entry_03.DisHist_Name = Write_Database_Contents(Fields.Name, New_DisHist_Name_03.Text)
+                    New_DisHist_Entry_03.DisHist_Start = Write_Database_Contents(Fields.Start_Date, New_DisHist_Start_03.Text)
+                    New_DisHist_Entry_03.DisHist_End = Write_Database_Contents(Fields.End_Date, New_DisHist_End_03.Text)
+                    myEntities.AddToDisHists(New_DisHist_Entry_03)
+                    myEntities.SaveChanges()
+                    'Get DisHist_ID of dataset that was just added
+                    Dim Current_DH = (From DH In myEntities.DisHists
+                                      Where DH.AE_ID = Query_AE_ID
+                                      Order By DH.DisHist_ID Descending
+                                      Select DH).First()
+                    'Add updates to DisHist Details to New Journal Entry
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, True, False, Fields.Name, String.Empty, Current_DH.DisHist_Name)
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, True, False, Fields.Start_Date, Nothing, Current_DH.DisHist_Start)
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.DisHist, Current_DH.DisHist_ID, True, False, Fields.End_Date, Nothing, Current_DH.DisHist_End)
+                End If
+                'For Each existing MedHist entry 
+                For Each MHitem In MedHistRepeater.Items
+                    'Make controls accessible
+                    Dim Current_MedHist_ID As Label = MHitem.FindControl("MedHist_ID")
+                    Dim Current_MedHist_Name_Textbox As TextBox = MHitem.FindControl("MedHist_Name")
+                    Dim Current_MedHist_Start_Textbox As TextBox = MHitem.FindControl("MedHist_Start")
+                    Dim Current_MedHist_End_Textbox As TextBox = MHitem.FindControl("MedHist_End")
+                    Dim Remove_MedHist_Dataset_Checkbox As CheckBox = MHitem.FindControl("Remove_MedHist_Dataset_Checkbox")
+                    'Load Current MH as object
+                    Dim Current_MH = (From MH In myEntities.MedHists
+                                      Where MH.MedHist_ID = Current_MedHist_ID.Text
+                                      Select MH).SingleOrDefault()
+                    If Remove_MedHist_Dataset_Checkbox.Checked = True Then
+                        'Document Deletion of MedHist Entry in New Journal Entry
+                        New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, False, True, Fields.Name, Current_MH.MedHist_Name, String.Empty)
+                        New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, False, True, Fields.Start_Date, Current_MH.MedHist_Start, Nothing)
+                        New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, False, True, Fields.End_Date, Current_MH.MedHist_End, Nothing)
+                        'Delete Current MH from Table MedHists
+                        myEntities.DeleteObject(Current_MH)
+                    Else
+                        'Document updates to MedHist Details to New Journal Entry
+                        New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, False, False, Fields.Name, Current_MH.MedHist_Name, Current_MedHist_Name_Textbox.Text.Trim)
+                        New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, False, False, Fields.Start_Date, Current_MH.MedHist_Start, Current_MedHist_Start_Textbox.Text)
+                        New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, False, False, Fields.End_Date, Current_MH.MedHist_End, Current_MedHist_End_Textbox.Text)
+                        'Write Textbox inputs for existing MedHist entries to DiHist datasets in database
+                        Current_MH.MedHist_Name = Write_Database_Contents(Fields.Name, Current_MedHist_Name_Textbox.Text)
+                        Current_MH.MedHist_Start = Write_Database_Contents(Fields.Start_Date, Current_MedHist_Start_Textbox.Text)
+                        Current_MH.MedHist_End = Write_Database_Contents(Fields.End_Date, Current_MedHist_End_Textbox.Text)
+                    End If
+                Next
+                'If New_MedHist_Name_01 Is populated Then
+                If (New_MedHist_Name_01.Text.Trim() <> String.Empty) Then
+                    'Generate new MedHist entry for current AE and populate with Input from New_MedHist_Row_01 
+                    Dim New_MedHist_Entry_01 As MedHist = New MedHist()
+                    New_MedHist_Entry_01.AE_ID = Query_AE_ID
+                    New_MedHist_Entry_01.MedHist_Name = Write_Database_Contents(Fields.Name, New_MedHist_Name_01.Text)
+                    New_MedHist_Entry_01.MedHist_Start = Write_Database_Contents(Fields.Start_Date, New_MedHist_Start_01.Text)
+                    New_MedHist_Entry_01.MedHist_End = Write_Database_Contents(Fields.End_Date, New_MedHist_End_01.Text)
+                    myEntities.AddToMedHists(New_MedHist_Entry_01)
+                    myEntities.SaveChanges()
+                    'Get MedHist_ID of dataset that was just added
+                    Dim Current_MH = (From MH In myEntities.MedHists
+                                      Where MH.AE_ID = Query_AE_ID
+                                      Order By MH.MedHist_ID Descending
+                                      Select MH).First()
+                    'Add updates to MedHist Details to New Journal Entry
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, True, False, Fields.Name, String.Empty, Current_MH.MedHist_Name)
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, True, False, Fields.Start_Date, Nothing, Current_MH.MedHist_Start)
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, True, False, Fields.End_Date, Nothing, Current_MH.MedHist_End)
+                End If
+                'If New_MedHist_Name_02 Is populated Then
+                If (New_MedHist_Name_02.Text.Trim() <> String.Empty) Then
+                    'Generate new MedHist entry for current AE and populate with Input from New_MedHist_Row_02 
+                    Dim New_MedHist_Entry_02 As MedHist = New MedHist()
+                    New_MedHist_Entry_02.AE_ID = Query_AE_ID
+                    New_MedHist_Entry_02.MedHist_Name = Write_Database_Contents(Fields.Name, New_MedHist_Name_02.Text)
+                    New_MedHist_Entry_02.MedHist_Start = Write_Database_Contents(Fields.Start_Date, New_MedHist_Start_02.Text)
+                    New_MedHist_Entry_02.MedHist_End = Write_Database_Contents(Fields.End_Date, New_MedHist_End_02.Text)
+                    myEntities.AddToMedHists(New_MedHist_Entry_02)
+                    myEntities.SaveChanges()
+                    'Get MedHist_ID of dataset that was just added
+                    Dim Current_MH = (From MH In myEntities.MedHists
+                                      Where MH.AE_ID = Query_AE_ID
+                                      Order By MH.MedHist_ID Descending
+                                      Select MH).First()
+                    'Add updates to MedHist Details to New Journal Entry
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, True, False, Fields.Name, String.Empty, Current_MH.MedHist_Name)
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, True, False, Fields.Start_Date, Nothing, Current_MH.MedHist_Start)
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, True, False, Fields.End_Date, Nothing, Current_MH.MedHist_End)
+                End If
+                'If New_MedHist_Name_03 Is populated Then
+                If (New_MedHist_Name_03.Text.Trim() <> String.Empty) Then
+                    'Generate new MedHist entry for current AE and populate with Input from New_MedHist_Row_03 
+                    Dim New_MedHist_Entry_03 As MedHist = New MedHist()
+                    New_MedHist_Entry_03.AE_ID = Query_AE_ID
+                    New_MedHist_Entry_03.MedHist_Name = Write_Database_Contents(Fields.Name, New_MedHist_Name_03.Text)
+                    New_MedHist_Entry_03.MedHist_Start = Write_Database_Contents(Fields.Start_Date, New_MedHist_Start_03.Text)
+                    New_MedHist_Entry_03.MedHist_End = Write_Database_Contents(Fields.End_Date, New_MedHist_End_03.Text)
+                    myEntities.AddToMedHists(New_MedHist_Entry_03)
+                    myEntities.SaveChanges()
+                    'Get MedHist_ID of dataset that was just added
+                    Dim Current_MH = (From MH In myEntities.MedHists
+                                      Where MH.AE_ID = Query_AE_ID
+                                      Order By MH.MedHist_ID Descending
+                                      Select MH).First()
+                    'Add updates to MedHist Details to New Journal Entry
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, True, False, Fields.Name, String.Empty, Current_MH.MedHist_Name)
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, True, False, Fields.Start_Date, Nothing, Current_MH.MedHist_Start)
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, True, False, Fields.End_Date, Nothing, Current_MH.MedHist_End)
+                End If
+                'If MedHist_Remove_Entries has been clicked
+                If (Remove_MedHist_Dataset_Header.Visible = True) Then
+                    'For Each existing MedHist entry 
+                    For Each DHitem In MedHistRepeater.Items
+                        'Make Remove_MedHist_Dataset_Checkbox accessible and check if it is checked
+                        Dim Remove_MedHist_Dataset_Checkbox As CheckBox = DHitem.FindControl("Remove_MedHist_Dataset_Checkbox")
+                        'Handle checked checkboxes 
+                        If Remove_MedHist_Dataset_Checkbox.Checked = True Then
+                            'Identify Current_MedHist_ID
+                            Dim Current_MedHist_ID As Label = DHitem.FindControl("MedHist_ID")
+                            'Load Current DH as object
+                            Dim Current_MH = (From MH In myEntities.MedHists
+                                              Where MH.MedHist_ID = Current_MedHist_ID.Text
+                                              Select MH).SingleOrDefault()
+                            'Add updates to MedHist Details to New Journal Entry
+                            New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, False, True, Fields.Name, Current_MH.MedHist_Name, String.Empty)
+                            New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, False, True, Fields.Start_Date, Current_MH.MedHist_Start, Nothing)
+                            New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.MedHist, Current_MH.MedHist_ID, False, True, Fields.End_Date, Current_MH.MedHist_End, Nothing)
+                            'Delete Current_MH dataset from Table MedHists
+                            myEntities.DeleteObject(Current_MH)
+                            myEntities.SaveChanges()
+                        End If
+                    Next
+                End If
+                'If attached file was specified for Upload
+                If AttachedFileUpload.HasFile = True Then
+                    'Upload attached file
+                    Dim virtualFolder As String = "~/Attached_Files/" & Current_AE.AE.AE_Organization_ID & "/" & Current_AE.AE.AE_ID & "/"
+                    Dim physicalFolder As String = Server.MapPath(virtualFolder)
+                    Dim fileGuid As String = Guid.NewGuid().ToString()
+                    Dim fileName As String = AttachedFileUpload.FileName
+                    Dim extension As String = System.IO.Path.GetExtension(AttachedFileUpload.FileName)
+                    If (Not System.IO.Directory.Exists(physicalFolder)) Then
+                        System.IO.Directory.CreateDirectory(physicalFolder)
+                    End If
+                    AttachedFileUpload.SaveAs(System.IO.Path.Combine(physicalFolder, fileGuid + extension))
+                    'Create dataset for new attached file in table AttachedFiles 
+                    Dim New_AttachedFile As AttachedFile = New AttachedFile()
+                    New_AttachedFile.AttachedFile_AE_ID = Current_AE.AE.AE_ID
+                    New_AttachedFile.AttachedFile_GUID = fileGuid
+                    New_AttachedFile.AttachedFile_Name = fileName
+                    New_AttachedFile.AttachedFile_Extension = extension.ToString
+                    New_AttachedFile.AttachedFile_Timepoint = Now()
+                    myEntities.AddToAttachedFiles(New_AttachedFile)
+                    'Add file attachment to New Journal Entry
+                    New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.Attached_File, Nothing, True, False, Fields.Name, String.Empty, New_AttachedFile.AttachedFile_Name)
+                End If
+                'If attached file(s) was/were selected for deletion
+                For Each item In Attached_Files_Repeater.Items
+                    'Make Remove_DisHist_Dataset_Checkbox accessible
+                    Dim AttachedFileDelete_Checkbox As CheckBox = item.FindControl("AttachedFileDelete_Checkbox")
+                    'Handle checked checkboxes 
+                    If AttachedFileDelete_Checkbox.Checked = True Then
+                        'Identify Current_AttachedFile_ID
+                        Dim Current_AttachedFile_ID As HiddenField = item.FindControl("AttachedFile_ID")
+                        'Load Current Attached File Dataset as object
+                        Dim Current_AF = (From AF In myEntities.AttachedFiles
+                                          Where AF.AttachedFile_ID = Current_AttachedFile_ID.Value
+                                          Select AF).SingleOrDefault()
+                        'Delete Current AF from Table AttachedFiles
+                        Try
+                            File.Delete(Server.MapPath("~/Attached_Files/" & Current_AE.AE.AE_Organization_ID & "/" & Current_AE.AE.AE_ID & "/" & Current_AF.AttachedFile_GUID & Current_AF.AttachedFile_Extension))
+                            'Add updates to Attached File Details to New Journal Entry
+                            New_Journal_Entry.Journal_Entry_Content += Add_Journal_Content(SubtableTypes.Attached_File, Current_AF.AttachedFile_ID, False, True, Fields.Name, Current_AF.AttachedFile_Name, String.Empty)
+                        Catch ex As FileNotFoundException
+                            New_Journal_Entry.Journal_Entry_Content += "Deletion of " & Current_AF.AttachedFile_Name & Current_AF.AttachedFile_Extension & " failed"
+                            Response.Redirect("~/GeneralError.apsx")
+                        End Try
+                        'Mark file as deleted in AttachedFiles Table
+                        Current_AF.AttachedFile_Removed = True
+                    End If
+                Next
+                'Save and redirect to AEMAnagementDetailsView.aspx
+                If New_Journal_Entry.Journal_Entry_Content <> String.Empty Then
+                    myEntities.AddToJournal_Entries(New_Journal_Entry)
+                End If
+                myEntities.SaveChanges()
+            End Using
+            Response.Redirect("~/Application/AEManagementDetailsView.aspx?AE_ID=" & Query_AE_ID)
+        End If
+    End Sub
+End Class

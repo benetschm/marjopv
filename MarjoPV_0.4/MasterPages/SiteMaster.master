@@ -1,0 +1,84 @@
+﻿<%@ Master Language="VB" CodeFile="SiteMaster.master.vb" Inherits="MasterPages_SiteMaster" %>
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marjo PV - <%: Page.Title %></title>
+    <%--Referenced Stylesheets --%>
+    <link href="../css/bootstrap.min.css" rel="stylesheet" />
+    <link href="../css/bootstrap.css" rel="stylesheet" />
+    <link href="../css/normalize.css" rel="stylesheet" />
+    <link href="../css/MarjoPV.css" rel="stylesheet" />
+     <%--Referenced Scripts --%>
+    <script src="../Scripts/modernizr-2.6.2.js"></script>
+    <script src="../Scripts/jquery-1.11.3.min.js"></script>
+    <script src="../Scripts/bootstrap.min.js"></script>
+    <script src="../Scripts/MaitnainActiveTabOnPostback.js"></script>
+    <asp:ContentPlaceHolder id="HeadContent" runat="server">
+    <%-- Head Content is executed here --%>
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <form runat="server">
+        <asp:ScriptManager runat="server" />
+        <%--navigation bar --%>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li><a ID="Home_Link" runat="server" href="~/">Home</a></li>
+                        <li><a ID="ICSRs_Link" runat="server" href="~/Application/ICSRs.aspx">ICSRs</a></li>
+                        <li><a ID="Medications_Link" runat="server" href="~/Application/Medications.aspx">Medications</a></li>
+                        <li><a ID="Reporting_Link" runat="server" href="~/Application/Reports.aspx">Reporting</a></li>
+                        <li><a ID="Adminsitration_Link" runat="server" href="~/Administration/Administration.aspx" >Administration</a></li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><asp:LinkButton ID="LoggedIn_User_Linkbutton" runat="server" ToolTip="Click here to manage your user account" /></li>
+                        <li><asp:LinkButton ID="LoginStatus_Linkbutton" runat="server" /></li>
+                    </ul>                          
+                </div>
+            </div>
+        </div>
+        <%--Main Content Placeholder and Footer--%>
+        <div ID="main-content" class="container-fluid">
+            <br />
+            <br />
+            <br />
+            <asp:ContentPlaceHolder ID="MainContent" runat="server">
+                <%-- Page Content is executed here --%>
+            </asp:ContentPlaceHolder>
+        </div>
+        <hr />
+        <footer class="navbar navbar-inverse navbar-bottom">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li><a ID="A1" runat="server" href="~/About.aspx">About</a></li>
+                        <li><a ID="A2" runat="server" href="~/Contact.aspx">Contact</a></li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a ID="A3" runat="server" href="~/">Marjo PV Software v0.4 - &copy; <%: DateTime.Now.Year %></a></li>
+                    </ul>                          
+                </div>
+            </div>
+        </footer>
+    </form>
+</body>
+</html>

@@ -1,0 +1,186 @@
+﻿Imports MarjoPVModel
+Imports GlobalVariables
+Imports GlobalCode
+Imports System.IO
+Imports System.Data
+
+Partial Class Application_AEManagementDetailsView
+    Inherits System.Web.UI.Page
+
+    Protected Sub Page_Load(sender As Object, e As EventArgs) Handles Me.Load
+        If Login_Status = True Then
+            'Store AE_ID from QueryString in Variable
+            Dim Query_AE_ID As Integer = Request.QueryString("AE_ID")
+            Using myEntities As New MarjoPVEntities()
+                'Show Edit AE Button for Authorized Users
+                Dim Can_Edit = (From R In myEntities.Roles
+                                Join UOR In myEntities.MarjoPVUsersToOrganizationsAndRoles On R.Role_ID Equals UOR.Role_ID
+                                Join U In myEntities.MarjoPVUsers On UOR.MarjoPVUser_ID Equals U.MarjoPV_User_ID
+                                Join AE In myEntities.AEs On UOR.Organization_ID Equals AE.AE_Organization_ID
+                                Where U.MarjoPV_User_ID = LoggedIn_MarjoPVUser_ID And AE.AE_ID = Query_AE_ID And R.Can_Edit_AEs = True
+                                Select U).Distinct()
+                If Can_Edit.Count() > 0 Then
+                    EditAEDetailsHyperlink.Visible = True
+                End If
+                'Collect Details of Current AE from database and populate Processing Status
+                Dim Current_AE_Details = (From AED In myEntities.AEs
+                                          Join S In myEntities.AE_Statuses On AED.AE_Status_ID Equals S.AE_Status_ID
+                                          Where AED.AE_ID = Query_AE_ID
+                                          Select AED, S).SingleOrDefault()
+                'Check Logged In User Authorization to view Current AE
+                Dim Current_User_Authorized As Boolean = False
+                For Each item In LoggedIn_MarjoPVUser_Orgnaizations
+                    If item = Current_AE_Details.AED.AE_Organization_ID Then
+                        Current_User_Authorized = True
+                    End If
+                Next
+                If Current_User_Authorized = True Then
+                    'Populate AE_Details_Title Label
+                    AE_Details_Title.Text = "View Adverse Event " & Query_AE_ID
+                    'Populate Url of Edit AE Details Button Hyperlink
+                    EditAEDetailsHyperlink.NavigateUrl = "~/Application/AEManagementDetailsEdit.aspx?AE_ID=" & Query_AE_ID
+                    Current_AE_Status_Name.Text = Display_Database_Contents(Current_AE_Details.S.AE_Status_Name)
+                    Current_AE_Initial_Setup.Text = Display_Database_Contents(Current_AE_Details.AED.AE_Initial_Setup_Date)
+                    Current_AE_Due_Date.Text = Display_Database_Contents(Current_AE_Details.AED.AE_Due_Date)
+                    Current_AE_Next_Step.Text = Display_Database_Contents(Current_AE_Details.AED.AE_Next_Step)
+                    Current_AE_Next_Step_Due.Text = Display_Database_Contents(Current_AE_Details.AED.AE_Next_Step_Due_Date)
+                    Current_AE_Diagnosis.Text = Display_Database_Contents(Current_AE_Details.AED.AE_CIOMS_Diagnosis)
+                    Current_AE_Start.Text = Display_Database_Contents(Current_AE_Details.AED.AE_CIOMS_Start_Date)
+                    Current_AE_End.Text = Display_Database_Contents(Current_AE_Details.AED.AE_CIOMS_End_Date)
+                    Current_AE_Suspected_Drug.Text = Display_Database_Contents(Current_AE_Details.AED.AE_Suspected_Drug)
+                    Current_AE_Narrative.Text = Display_Database_Contents(Current_AE_Details.AED.AE_Narrative)
+                    'Collect Disease History Details of Current AE from database and populate CIOMS Form
+                    Dim Current_AE_DisHist = (From DH In myEntities.DisHists
+                                              Where DH.AE_ID = Query_AE_ID
+                                              Select DH).Distinct()
+                    Dim DisHist_DataTable As New DataTable()
+                    DisHist_DataTable.Columns.AddRange(New DataColumn(4) {
+                                                       New DataColumn("DisHist_ID", Type.GetType("System.String")),
+                                                       New DataColumn("DisHist_Name", Type.GetType("System.String")),
+                                                       New DataColumn("DisHist_Start", Type.GetType("System.String")),
+                                                       New DataColumn("DisHist_End", Type.GetType("System.String")),
+                                                       New DataColumn("DisHist_Sort_Order", Type.GetType("System.Int32"))
+                                                       })
+                    For Each item In Current_AE_DisHist
+                        DisHist_DataTable.Rows.Add(
+                        Display_Database_Contents(item.DisHist_ID),
+                        Display_Database_Contents(item.DisHist_Name),
+                        Display_Database_Contents(item.DisHist_Start),
+                        Display_Database_Contents(item.DisHist_End),
+                        item.DisHist_ID
+                        )
+                    Next
+                    DisHist_DataTable.DefaultView.Sort = "DisHist_Sort_Order"
+                    DisHistRepeater.DataSource = DisHist_DataTable
+                    DisHistRepeater.DataBind()
+                    'Collect Medical History Details of Current AE from database and populate CIOMS Form
+                    Dim Current_AE_MedHist = (From MH In myEntities.MedHists
+                                              Where MH.AE_ID = Query_AE_ID
+                                              Select MH).Distinct()
+                    Dim MedHist_DataTable As New DataTable()
+                    MedHist_DataTable.Columns.AddRange(New DataColumn(4) {
+                                                       New DataColumn("MedHist_ID", Type.GetType("System.String")),
+                                                       New DataColumn("MedHist_Name", Type.GetType("System.String")),
+                                                       New DataColumn("MedHist_Start", Type.GetType("System.String")),
+                                                       New DataColumn("MedHist_End", Type.GetType("System.String")),
+                                                       New DataColumn("MedHist_Sort_Order", Type.GetType("System.Int32"))
+                                                       })
+                    For Each item In Current_AE_MedHist
+                        MedHist_DataTable.Rows.Add(
+                        Display_Database_Contents(item.MedHist_ID),
+                        Display_Database_Contents(item.MedHist_Name),
+                        Display_Database_Contents(item.MedHist_Start),
+                        Display_Database_Contents(item.MedHist_End),
+                        item.MedHist_ID
+                        )
+                    Next
+                    MedHist_DataTable.DefaultView.Sort = "MedHist_Sort_Order"
+                    MedHistRepeater.DataSource = MedHist_DataTable
+                    MedHistRepeater.DataBind()
+                    'Load Attached Files for current AE
+                    Dim Current_AE_AttachedFiles = (From AF In myEntities.AttachedFiles
+                                                    Join AE In myEntities.AEs On AF.AttachedFile_AE_ID Equals AE.AE_ID
+                                                    Where AF.AttachedFile_AE_ID = Query_AE_ID And AF.AttachedFile_Removed = False
+                                                    Select AF, AE).Distinct()
+                    Dim Attached_Files_DataTable As New DataTable()
+                    Attached_Files_DataTable.Columns.AddRange(New DataColumn(6) {
+                                                                       New DataColumn("AttachedFile_FileName", Type.GetType("System.String")),
+                                                                       New DataColumn("AttachedFile_Date", Type.GetType("System.String")),
+                                                                       New DataColumn("AttachedFile_Organization_ID", Type.GetType("System.String")),
+                                                                       New DataColumn("AE_ID", Type.GetType("System.String")),
+                                                                       New DataColumn("AttachedFile_GUID", Type.GetType("System.String")),
+                                                                       New DataColumn("AttachedFile_FileExtension", Type.GetType("System.String")),
+                                                                       New DataColumn("AttachedFile_Sort_Order", Type.GetType("System.Int32"))
+                                                                       })
+                    For Each item In Current_AE_AttachedFiles
+                        Attached_Files_DataTable.Rows.Add(
+                            Display_Database_Contents(item.AF.AttachedFile_Name),
+                            Display_Database_Contents(item.AF.AttachedFile_Timepoint),
+                            Display_Database_Contents(item.AE.AE_Organization_ID),
+                            Display_Database_Contents(item.AE.AE_ID),
+                            Display_Database_Contents(item.AF.AttachedFile_GUID),
+                            Display_Database_Contents(item.AF.AttachedFile_Extension),
+                            item.AF.AttachedFile_ID
+                        )
+                    Next
+                    Attached_Files_DataTable.DefaultView.Sort = "AttachedFile_Sort_Order DESC"
+                    Attached_Files_Repeater.DataSource = Attached_Files_DataTable
+                    Attached_Files_Repeater.DataBind()
+                    'Collect Journal Entry Details of Current AE from database and populate Journal
+                    Dim Current_AE_Journal = (From AEJ In myEntities.Journal_Entries
+                                              Join U In myEntities.MarjoPVUsers On AEJ.Journal_Entry_User_ID Equals U.MarjoPV_User_ID
+                                              Order By AEJ.Journal_Entry_ID Descending
+                                              Where AEJ.AE_ID = Query_AE_ID
+                                              Select AEJ, U).Distinct()
+                    Dim Journal_DataTable As New DataTable()
+                    Journal_DataTable.Columns.AddRange(New DataColumn(4) {
+                                                                       New DataColumn("Journal_Entry_User_Name", Type.GetType("System.String")),
+                                                                       New DataColumn("Journal_Entry_Date", Type.GetType("System.String")),
+                                                                       New DataColumn("Journal_Entry_Time", Type.GetType("System.String")),
+                                                                       New DataColumn("Journal_Entry_Content", Type.GetType("System.String")),
+                                                                       New DataColumn("Journal_Sort_Order", Type.GetType("System.Int32"))
+                                                                       })
+                    For Each item In Current_AE_Journal
+                        Journal_DataTable.Rows.Add(
+                            Display_Database_Contents(item.U.MarjoPVUser_Full_Name),
+                            Display_Database_Contents(item.AEJ.Journal_Entry_Datetime.ToShortDateString),
+                            Display_Database_Contents(item.AEJ.Journal_Entry_Datetime.ToShortTimeString),
+                            Display_Database_Contents(item.AEJ.Journal_Entry_Content),
+                            item.AEJ.Journal_Entry_ID
+                        )
+                    Next
+                    Journal_DataTable.DefaultView.Sort = "Journal_Sort_Order DESC"
+                    JournalRepeater.DataSource = Journal_DataTable
+                    JournalRepeater.DataBind()
+                Else
+                    'Populate AE_Details_Title Label
+                    AE_Details_Title.Text = "You are Not authorized to view the requested data. If you think this is a mistake, please contact the Marjo PV administration team."
+                    Content_Tabs.Visible = False
+                    EditAEDetailsHyperlink.Visible = False
+                End If
+            End Using
+        Else
+            Response.Redirect("~/Account/Login.aspx?ReturnUrl=" & VirtualPathUtility.ToAbsolute("~/") & "Application/AEManagementDetailsView.aspx?AE_ID=" & Request.QueryString("AE_ID"))
+        End If
+    End Sub
+
+    Protected Sub Open_AttachedFile_Click(sender As Object, e As EventArgs)
+        Try
+            'Make linkbutton of clicked item accessible
+            Dim Open_AttachedFile As LinkButton = CType(sender, LinkButton)
+            'Store physical document path to variable
+            Dim commandArgument As String = sender.CommandArgument
+            Dim path As String = Server.MapPath(commandArgument)
+            'Create new FileInfo object for current file
+            Dim file As System.IO.FileInfo = New System.IO.FileInfo(path)
+            Response.Clear()
+            Response.AddHeader("Content-Disposition", "attachment; filename=" & Open_AttachedFile.Text)
+            Response.AddHeader("Content-Length", file.Length.ToString())
+            Response.ContentType = "application/octet-stream"
+            Response.WriteFile(file.Name)
+            Response.End()
+        Catch ex As FileNotFoundException
+            Response.Redirect("~/GeneralError.aspx")
+        End Try
+    End Sub
+End Class

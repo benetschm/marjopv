@@ -1,0 +1,66 @@
+﻿<%@ Master Language="VB" CodeFile="ErrorMaster.master.vb" Inherits="MasterPages_ErrorMaster" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marjo PV - <%: Page.Title %></title>
+    <%--Referenced Stylesheets --%>
+    <link href="../css/bootstrap.min.css" rel="stylesheet" />
+    <link href="../css/bootstrap.css" rel="stylesheet" />
+    <link href="../css/normalize.css" rel="stylesheet" />
+    <link href="../css/MarjoPV.css" rel="stylesheet" />
+     <%--Referenced Scripts --%>
+    <script src="../Scripts/modernizr-2.6.2.js"></script>
+    <script src="../Scripts/jquery-1.11.3.min.js"></script>
+    <script src="../Scripts/bootstrap.min.js"></script>
+    <script src="../Scripts/MaitnainActiveTabOnPostback.js"></script>
+    <asp:ContentPlaceHolder id="HeadContent" runat="server">
+    <%-- Head Content is executed here --%>
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <form runat="server">
+        <asp:ScriptManager runat="server" />
+        <%--navigation bar --%>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" runat="server" href="~/">Marjo PV</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li><a runat="server" href="~/Default.aspx">Home</a></li>
+                        <li><a runat="server" href="~/About.aspx">About</a></li>
+                        <li><a runat="server" href="~/Contact.aspx">Contact</a></li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                    </ul>                          
+                </div>
+
+            </div>
+        </div>
+        <%--Main Content Placeholder and Footer--%>
+        <div class="container-fluid">
+            <br />
+            <br />
+            <asp:ContentPlaceHolder ID="MainContent" runat="server">
+                <%-- Page Content is executed here --%>
+            </asp:ContentPlaceHolder>
+        </div>
+        <hr />
+        <footer>
+            <div class="col-lg-12">
+                <p>&copy; <%: DateTime.Now.Year %> - Marjo PV</p>
+            </div>
+        </footer>
+    </form>
+</body>
+</html>

@@ -1,0 +1,206 @@
+﻿<%@ Page Title="" Language="VB" MasterPageFile="~/MasterPages/SiteMaster.master" AutoEventWireup="false" CodeFile="AEManagementDetailsView.aspx.vb" Inherits="Application_AEManagementDetailsView" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" Runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" Runat="Server">
+    <div class="row">
+        <div class="col-lg-12">
+            <h3><asp:Label ID="AE_Details_Title" runat="server"></asp:Label></h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel">    
+                <asp:hyperlink ID="EditAEDetailsHyperlink" runat="server" class="btn btn-primary" Text="Edit AE Details" Visible="false"></asp:hyperlink>
+            </div>
+        </div>
+    </div>
+    <div id="Content_Tabs" class="row" runat="server">
+        <div class="col-lg-12">
+            <div class="panel" id="Tabs" role="tabpanel">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs nav-justified" role="tablist">
+                    <li>
+                        <a href="#Tab1" aria-controls="Tab1" role="tab" data-toggle="tab" class="Tab_Nav Tab1_Nav">
+                            Processing Status
+                        </a>
+                    </li>
+                    <li><a href="#Tab2" aria-controls="Tab2" role="tab" data-toggle="tab" class="Tab_Nav Tab2_Nav">CIOMS Form</a></li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content Tab_Border">
+                    <div role="tabpanel" class="tab-pane Tab_Body Tab1_Body active" id="Tab1">
+                        <div class="panel Tab_Body_Panel">    
+                            <table class="table table-responsive table-striped table-hover">
+                                <tr>
+                                    <td>Status:</td>
+                                    <td><asp:Label ID="Current_AE_Status_Name" runat="server" ></asp:Label></td>
+                                </tr>
+                                <tr>    
+                                    <td>Initial Setup:</td>
+                                            <td><asp:Label ID="Current_AE_Initial_Setup" runat="server" ></asp:Label></td>
+                                </tr>
+                                <tr>
+                                    <td>Due Date:</td>
+                                    <td><asp:Label ID="Current_AE_Due_Date" runat="server" ></asp:Label></td>
+                                </tr>
+                                <tr>
+                                    <td>Next Step:</td>
+                                    <td><asp:Label ID="Current_AE_Next_Step" runat="server" ></asp:Label></td>
+                                </tr>
+                                <tr>
+                                    <td>Next Step Due Date:</td>
+                                    <td><asp:Label ID="Current_AE_Next_Step_Due" runat="server" ></asp:Label></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="panel Tab_Body_Panel">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <a data-toggle="collapse" href="#collapseOne">
+                                        <div class="panel-title">
+                                            <Table>
+                                                <tr>
+                                                    <td style="color: #333"><asp:Label runat="server" Text="Attached Files" CssClass="h4"></asp:Label></td>
+                                                    <td style="text-align: right; color: #333"><asp:Label ID="Label1" runat="server" class="glyphicon glyphicon-collapse-down"></asp:Label></td>
+                                                </tr>
+                                            </Table>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div id="collapseOne" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div class="col-lg-12">
+                                            <asp:Repeater ID="Attached_Files_Repeater" runat="server">
+                                                <HeaderTemplate>
+                                                    <table class="table table-hover">
+                                                </HeaderTemplate>
+                                                <ItemTemplate>
+                                                    <tr>
+                                                        <td><asp:Linkbutton ID="Open_AttachedFile" runat="server" Text='<%# Eval("AttachedFile_FileName") + " (added " + Eval("AttachedFile_Date") + ")" %>' OnClick="Open_AttachedFile_Click" CommandArgument='<%# " ~/Attached_Files/" + Convert.ToString(Eval("AttachedFile_Organization_ID")) + "/" + Convert.ToString(Eval("AE_ID")) + "/" + Convert.ToString(Eval("AttachedFile_GUID")) + Convert.ToString(Eval("AttachedFile_FileExtension")) %>' ></asp:Linkbutton></td> 
+                                                    </tr>
+                                                </ItemTemplate>
+                                                <FooterTemplate>
+                                                    </table>
+                                                </FooterTemplate>
+                                            </asp:Repeater>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel Tab_Body_Panel">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <a data-toggle="collapse" href="#collapseTwo">
+                                        <div class="panel-title">
+                                            <Table>
+                                                <tr>
+                                                    <td style="color: #333"><asp:Label runat="server" Text="Processing History" CssClass="h4"></asp:Label></td>
+                                                <td style="text-align: right; color: #333"><asp:Label ID="Label3" runat="server" class="glyphicon glyphicon-collapse-down"></asp:Label></td>
+                                                </tr>
+                                            </Table>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div id="collapseTwo" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <div class="col-lg-12">
+                                            <table class="table table-responsive table-striped table-hover">
+                                                <asp:Repeater ID="JournalRepeater" runat="server">
+                                                    <ItemTemplate>
+                                                    <tr><th><asp:Label ID="Journal_Entry_1st_Row" runat="server" Text='<%# "Updated by " + Eval("Journal_Entry_User_Name") + " on " + Eval("Journal_Entry_Date") + " at " + Eval("Journal_Entry_Time") %>'></asp:Label></th></tr> 
+                                                    <tr>
+                                                        <td><asp:Label ID="Journal_Entry_Content" runat="server" Text='<%# Eval("Journal_Entry_Content") %>'></asp:Label>
+                                                            <br></br>
+                                                            <br></br></td>
+                                                    </tr>
+                                                    </ItemTemplate>
+                                                </asp:Repeater>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane Tab_Body Tab2_Body" id="Tab2">
+                        <div class="panel Tab_Body_Panel">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <table class="table table-responsive table-striped table-hover">
+                                        <tr>    
+                                            <td>Diagnosis:</td>
+                                            <td><asp:Label ID="Current_AE_Diagnosis" runat="server" ></asp:Label></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Start Date:</td>
+                                            <td><asp:Label ID="Current_AE_Start" runat="server" ></asp:Label></td>
+                                        </tr>
+                                        <tr>
+                                            <td>End Date:</td>
+                                            <td><asp:Label ID="Current_AE_End" runat="server" ></asp:Label></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Suspected Drug:</td>
+                                            <td><asp:Label ID="Current_AE_Suspected_Drug" runat="server" ></asp:Label></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Narrative:</td>
+                                            <td><asp:Label ID="Current_AE_Narrative" runat="server" ></asp:Label></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h4>Disease History</h4>
+                                    <table class="table table-responsive table-striped table-hover">
+                                            <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Start</th>
+                                            <th>End</th>
+                                        </tr>
+                                        <asp:Repeater ID="DisHistRepeater" runat="server">
+                                        <ItemTemplate>
+                                        <tr>
+                                            <td><asp:Label ID="Label1" runat="server" Text='<%# Eval("DisHist_ID") %>'></asp:Label></td>
+                                            <td><asp:Label ID="Label2" runat="server" Text='<%# Eval("DisHist_Name") %>'></asp:Label></td>
+                                            <td><asp:Label ID="Label4" runat="server" Text='<%# Eval("DisHist_Start", "{0:dd-MMM-yyyy}") %>'></asp:Label></td>
+                                            <td><asp:Label ID="Label7" runat="server" Text='<%# Eval("DisHist_End", "{0:dd-MMM-yyyy}") %>'></asp:Label></td>
+                                        </tr>
+                                        </ItemTemplate>
+                                        </asp:Repeater>
+                                    </table>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h4>Medication History</h4>
+                                    <table class="table table-responsive table-striped table-hover">
+                                            <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Start</th>
+                                            <th>End</th>
+                                        </tr>
+                                        <asp:Repeater ID="MedHistRepeater" runat="server">
+                                        <ItemTemplate>
+                                        <tr>
+                                            <td><asp:Label ID="Label1" runat="server" Text='<%# Eval("MedHist_ID") %>'></asp:Label></td>
+                                            <td><asp:Label ID="Label2" runat="server" Text='<%# Eval("MedHist_Name") %>'></asp:Label></td>
+                                            <td><asp:Label ID="Label4" runat="server" Text='<%# Eval("MedHist_Start", "{0:dd-MMM-yyyy}") %>'></asp:Label></td>
+                                            <td><asp:Label ID="Label7" runat="server" Text='<%# Eval("MedHist_End", "{0:dd-MMM-yyyy}") %>'></asp:Label></td>
+                                        </tr>
+                                        </ItemTemplate>
+                                        </asp:Repeater>
+                                    </table>
+                                </div>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<asp:HiddenField ID="TabName" runat="server" />
+</asp:Content>

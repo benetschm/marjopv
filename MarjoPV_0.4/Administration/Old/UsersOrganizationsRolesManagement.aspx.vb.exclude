@@ -1,0 +1,98 @@
+﻿Imports MarjoPVModel
+Imports GlobalVariables
+Imports GlobalCode
+Imports System.Data
+Imports System.Linq.Dynamic
+Imports System.Collections
+
+Partial Class Application_Administration_UsersOrganizationsRolesManagement
+    Inherits System.Web.UI.Page
+
+    Protected Sub Page_Load(sender As Object, e As EventArgs) Handles Me.Load
+        If Page.IsPostBack = False Then
+            If Login_Status = True Then
+                Using myEntities As New MarjoPVEntities()
+                    'Determine if User has Admin Rights
+
+                    '*** UPDATE CODE WHEN ADMIN STATUS HAS BEEN IMPLEMENTED IN USER TABLE ***
+
+                    'Populate User_Filter Dropdown List
+                    Dim Users = (From U In myEntities.MarjoPVUsers
+                                 Select U).Distinct()
+                    Dim Users_DataTable As New DataTable()
+                    Users_DataTable.Columns.AddRange(New DataColumn(1) {
+                                                             New DataColumn("User_ID", Type.GetType("System.Int32")),
+                                                             New DataColumn("User_Name", Type.GetType("System.String"))
+                                                             })
+                    Users_DataTable.Rows.Add(0, "All")
+                    For Each item In Users
+                        Users_DataTable.Rows.Add(
+                            Display_Database_Contents(item.MarjoPV_User_ID),
+                            Display_Database_Contents(item.MarjoPVUser_Name)
+                            )
+                    Next
+                    Users_DataTable.DefaultView.Sort = "User_ID"
+                    User_Filter.DataSource = Users_DataTable
+                    User_Filter.DataValueField = "User_ID"
+                    User_Filter.DataTextField = "User_Name"
+                    User_Filter.DataBind()
+                    'Populate Organization_Filter Dropdown List
+                    Dim Organizations = (From O In myEntities.Organizations
+                                         Select O).Distinct()
+                    Dim Organizations_DataTable As New DataTable()
+                    Organizations_DataTable.Columns.AddRange(New DataColumn(1) {
+                                                             New DataColumn("Organization_ID", Type.GetType("System.Int32")),
+                                                             New DataColumn("Organization_Name", Type.GetType("System.String"))
+                                                             })
+                    Organizations_DataTable.Rows.Add(0, "All")
+                    For Each item In Organizations
+                        Organizations_DataTable.Rows.Add(
+                            Display_Database_Contents(item.Organization_ID),
+                            Display_Database_Contents(item.Organization_Name)
+                            )
+                    Next
+                    Organizations_DataTable.DefaultView.Sort = "Organization_ID"
+                    Organization_Filter.DataSource = Organizations_DataTable
+                    Organization_Filter.DataValueField = "Organization_ID"
+                    Organization_Filter.DataTextField = "Organization_Name"
+                    Organization_Filter.DataBind()
+                    'Populate Table
+                    Dim UsersToOrganizationsAndRoles = (From UOR In myEntities.MarjoPVUsersToOrganizationsAndRoles
+                                                        Join U In myEntities.MarjoPVUsers On UOR.MarjoPVUser_ID Equals U.MarjoPV_User_ID
+                                                        Join O In myEntities.Organizations On UOR.Organization_ID Equals O.Organization_ID
+                                                        Join R In myEntities.Roles On UOR.Role_ID Equals R.Role_ID
+                                                        Select UOR, U, O, R).Distinct()
+                    Dim UsersToOrganizationsAndRoles_DataTable As New DataTable()
+                    UsersToOrganizationsAndRoles_DataTable.Columns.AddRange(New DataColumn(6) {
+                                                                            New DataColumn("ID", Type.GetType("System.Int32")),
+                                                                            New DataColumn("User_ID", Type.GetType("System.Int32")),
+                                                                            New DataColumn("User_Name", Type.GetType("System.String")),
+                                                                            New DataColumn("Organization_ID", Type.GetType("System.Int32")),
+                                                                            New DataColumn("Organization_Name", Type.GetType("System.String")),
+                                                                            New DataColumn("Role_ID", Type.GetType("System.Int32")),
+                                                                            New DataColumn("Role_Name", Type.GetType("System.String"))
+                                                                            })
+                    For Each item In UsersToOrganizationsAndRoles
+                        UsersToOrganizationsAndRoles_DataTable.Rows.Add(
+                        Display_Database_Contents(item.UOR.MarjoPVUserToOrganization_ID),
+                        Display_Database_Contents(item.UOR.MarjoPVUser_ID),
+                        Display_Database_Contents(item.U.MarjoPVUser_Name),
+                        Display_Database_Contents(item.UOR.Organization_ID),
+                        Display_Database_Contents(item.O.Organization_Name),
+                        Display_Database_Contents(item.UOR.Role_ID),
+                        Display_Database_Contents(item.R.Role_Name)
+                        )
+                    Next
+                    UsersToOrganizationsAndRoles_DataTable.DefaultView.Sort = "ID"
+                    UsersToOrganizationsAndRoles_Repeater.DataSource = UsersToOrganizationsAndRoles_DataTable
+                    UsersToOrganizationsAndRoles_Repeater.DataBind()
+                End Using
+            Else
+                Response.Redirect("~/Account/Login.aspx?ReturnUrl=" & VirtualPathUtility.ToAbsolute("~/") & "Application/UsersOrganizationsRolesManagement.aspx")
+            End If
+        End If
+    End Sub
+    Protected Sub Filter_List(sender As Object, e As EventArgs)
+
+    End Sub
+End Class

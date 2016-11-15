@@ -1,0 +1,217 @@
+﻿<%@ Page Title="" Language="VB" MasterPageFile="~/MasterPages/SiteMaster.master" AutoEventWireup="false" CodeFile="ICSR.aspx.vb" Inherits="Application_ICSR" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" Runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" Runat="Server">
+    <div class="col-lg-12">
+        <h3><asp:Label ID="Title_Label" runat="server"></asp:Label></h3>
+    </div>
+    <div id="Content_Tabs" class="row" runat="server">
+        <div class="col-lg-12">
+            <div class="panel" id="Tabs" role="tabpanel">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs nav-justified" role="tablist">
+                    <li>
+                        <a  href="#Tab1" aria-controls="Tab1" role="tab" data-toggle="tab">
+                            ICSR
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#Tab2" aria-controls="Tab2" role="tab" data-toggle="tab">
+                            Patient
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#Tab3" aria-controls="Tab3" role="tab" data-toggle="tab">
+                            Reports
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#Tab4" aria-controls="Tab4" role="tab" data-toggle="tab">
+                            Suspected Drugs
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#Tab5" aria-controls="Tab5" role="tab" data-toggle="tab">
+                            Events
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#Tab6" aria-controls="Tab6" role="tab" data-toggle="tab">
+                            Relations
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#Tab7" aria-controls="Tab7" role="tab" data-toggle="tab">
+                            Medication History
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#Tab8" aria-controls="Tab8" role="tab" data-toggle="tab">
+                            Case History
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#Tab9" aria-controls="Tab9" role="tab" data-toggle="tab">
+                            Attached Files
+                        </a>
+                    </li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content Tab_Border">
+                    <div role="tabpanel" class="tab-pane Tab_Body active" id="Tab1">
+                        <div class="panel Tab_Body_Panel">  
+                            <div class="row">
+                                <div class="col-lg-12">  
+                                    <asp:UpdatePanel runat="server">
+                                        <ContentTemplate>
+                                            <table class="table table-responsive table-striped table-hover">
+                                                <tr>
+                                                    <td><asp:button ID="EditICSR_Button" runat="server" class="btn btn-default" Text="Edit ICSR"></asp:button></td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr ID="Company_Row" runat="server">
+                                                    <td>Company:</td>
+                                                    <td>
+                                                        <asp:DropDownList ID="Companies_DropDownList" runat="server" CssClass="form-control" AutoPostBack="true"></asp:DropDownList>
+                                                        <asp:CustomValidator ID="Companies_DropDownList_Validator" runat="server" OnServerValidate="Companies_DropDownList_Validator_ServerValidate"></asp:CustomValidator>
+                                                    </td>
+                                                </tr>
+                                                <tr id="Assignee_Row" runat="server">
+                                                    <td>Assignee:</td>
+                                                    <td>
+                                                        <asp:DropDownList ID="Assignees_DropDownList" runat="server" CssClass="form-control" AutoPostBack="true"></asp:DropDownList>
+                                                        <asp:CustomValidator ID="Assignees_DropDownList_Validator" runat="server" OnServerValidate="Assignees_DropDownList_Validator_ServerValidate"></asp:CustomValidator>
+                                                    </td>
+                                                </tr>
+                                                <tr id="ICSRStatus_Row" runat="server">
+                                                    <td>Status:</td>
+                                                    <td>
+                                                        <asp:DropDownList ID="ICSRStatuses_DropDownList" runat="server" CssClass="form-control"></asp:DropDownList>
+                                                        <asp:CustomValidator ID="ICSRStatuses_DropDownList_Validator" runat="server" OnServerValidate="ICSRStatuses_DropDownList_Validator_ServerValidate"></asp:CustomValidator>
+                                                    </td>
+                                                </tr>
+                                                <tr id="Patient_Row" runat="server">
+                                                    <td>Patient Details:</td>
+                                                    <td>
+                                                        <asp:DropDownList ID="Patients_DropDownList" runat="server" CssClass="form-control"></asp:DropDownList>
+                                                        <asp:CustomValidator ID="Patients_DropDownList_Validator" runat="server" OnServerValidate="Patients_DropDownList_Validator_ServerValidate" ></asp:CustomValidator>
+                                                    </td>
+                                                </tr>
+                                                <tr id="IsSerious_Row" runat="server">
+                                                    <td>Is serious:</td>
+                                                    <td>
+                                                        <asp:DropDownList ID="IsSerious_DropDownList" runat="server" CssClass="form-control" AutoPostBack="true">
+                                                            <asp:ListItem Value="0" Text="False"/>
+                                                            <asp:ListItem Value="1" Text="True" Selected="True"/>
+                                                        </asp:DropDownList>
+                                                        <asp:CustomValidator ID="IsSerious_DropDownList_Validator" runat="server" OnServerValidate="IsSerious_DropDownList_Validator_ServerValidate"></asp:CustomValidator>
+                                                    </td>
+                                                </tr>
+                                                <tr id="SeriousnessCriterion_Row" runat="server">
+                                                    <td>Seriousness Criterion:</td>
+                                                    <td>
+                                                        <asp:DropDownList ID="SeriousnessCriteria_DropDownList" runat="server" CssClass="form-control"></asp:DropDownList>
+                                                        <asp:CustomValidator ID="SeriousnessCriteria_DropDownList_Validator" runat="server" OnServerValidate="SeriousnessCriteria_DropDownList_Validator_ServerValidate"></asp:CustomValidator>
+                                                    </td>
+                                                </tr>
+                                                <tr id="Narrative_Row" runat="server">
+                                                    <td>Narrative:</td>
+                                                    <td>
+                                                        <asp:Textbox ID="Narrative_Textbox" runat="server" CssClass="form-control" TextMode="MultiLine"></asp:Textbox>
+                                                        <asp:CustomValidator ID="Narrative_Textbox_Validator" runat="server" OnServerValidate="Narrative_Textbox_Validator_ServerValidate"></asp:CustomValidator>
+                                                    </td>
+                                                </tr>
+                                                <tr id="CompanyComment_Row" runat="server">
+                                                    <td>Company Comment:</td>
+                                                    <td>
+                                                        <asp:Textbox ID="CompanyComment_Textbox" runat="server" CssClass="form-control" TextMode="MultiLine"></asp:Textbox>
+                                                        <asp:CustomValidator ID="CompanyComment_Textbox_Validator" runat="server" OnServerValidate="CompanyComment_Textbox_Validator_ServerValidate" ></asp:CustomValidator>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </ContentTemplate>
+                                    </asp:UpdatePanel>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane Tab_Body active" id="Tab2">
+                        <div class="panel Tab_Body_Panel">  
+                            <div class="row">
+                                <div class="col-lg-12">  
+                            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane Tab_Body active" id="Tab3">
+                        <div class="panel Tab_Body_Panel">  
+                            <div class="row">
+                                <div class="col-lg-12">  
+                            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane Tab_Body active" id="Tab4">
+                        <div class="panel Tab_Body_Panel">  
+                            <div class="row">
+                                <div class="col-lg-12">  
+                            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane Tab_Body active" id="Tab5">
+                        <div class="panel Tab_Body_Panel">  
+                            <div class="row">
+                                <div class="col-lg-12">  
+                            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane Tab_Body active" id="Tab6">
+                        <div class="panel Tab_Body_Panel">  
+                            <div class="row">
+                                <div class="col-lg-12">  
+                            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane Tab_Body active" id="Tab7">
+                        <div class="panel Tab_Body_Panel">  
+                            <div class="row">
+                                <div class="col-lg-12">  
+                            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane Tab_Body active" id="Tab8">
+                        <div class="panel Tab_Body_Panel">  
+                            <div class="row">
+                                <div class="col-lg-12">  
+                            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane Tab_Body active" id="Tab9">
+                        <div class="panel Tab_Body_Panel">  
+                            <div class="row">
+                                <div class="col-lg-12">  
+                            
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <asp:HiddenField ID="TabName" runat="server" />
+</asp:Content>
+

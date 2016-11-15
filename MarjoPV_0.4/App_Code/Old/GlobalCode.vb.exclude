@@ -1,0 +1,347 @@
+﻿Imports Microsoft.VisualBasic
+Imports MarjoPVModel
+
+Public Class GlobalCode
+
+    Public Enum SubtableTypes
+        None
+        DisHist
+        MedHist
+        Attached_File
+    End Enum
+
+    Public Enum Fields
+        Initial_Setup_Date
+        Due_Date
+        Next_Step
+        Next_Step_Due_date
+        Diagnosis
+        Name
+        Start_Date
+        End_Date
+        Status
+        Suspected_Drug
+        Narrative
+        Journal_Entry
+    End Enum
+
+    Public Enum Data_Types
+        [Date]
+        [Integer]
+        [String]
+    End Enum
+
+    Public Shared Function Display_Database_Contents(Database_Contents As Object) As Object
+        'Initialize Return_String
+        Dim Return_String As String = ""
+        'If function is reading a String datapoint 
+        If TypeOf Database_Contents Is String Then
+            Return_String = Database_Contents
+            'If function is reading a Datetime datapoint 
+        ElseIf TypeOf Database_Contents Is DateTime Then
+            If Database_Contents <> Date.MinValue Then
+                Return_String = Database_Contents.ToShortDateString
+            Else
+                Return_String = ""
+            End If
+            'If function is reading an Integer datapoint 
+        ElseIf TypeOf Database_Contents Is Integer Then
+            If Database_Contents IsNot Nothing Then
+                Return_String = Database_Contents
+            Else
+                Return_String = ""
+            End If
+        End If
+        Return Return_String
+    End Function
+
+    Public Shared Function IsValidDate(ByVal dateString As String) As Boolean
+        Try
+            DateTime.Parse(dateString)
+            Return True
+        Catch ex As FormatException
+            Return False
+        End Try
+    End Function
+
+    Public Shared Function Write_Database_Contents(Field As Fields, Input As String) As Object
+        Dim Data_Type As Data_Types
+        If Field = Fields.Initial_Setup_Date Then
+            Data_Type = Data_Types.Date
+        ElseIf Field = Fields.Due_Date Then
+            Data_Type = Data_Types.Date
+        ElseIf Field = Fields.Next_Step Then
+            Data_Type = Data_Types.String
+        ElseIf Field = Fields.Next_Step_Due_date Then
+            Data_Type = Data_Types.Date
+        ElseIf Field = Fields.Diagnosis Then
+            Data_Type = Data_Types.String
+        ElseIf Field = Fields.End_Date Then
+            Data_Type = Data_Types.Date
+        ElseIf Field = Fields.Name Then
+            Data_Type = Data_Types.String
+        ElseIf Field = Fields.Narrative Then
+            Data_Type = Data_Types.String
+        ElseIf Field = Fields.Start_Date Then
+            Data_Type = Data_Types.Date
+        ElseIf Field = Fields.Status Then
+            Data_Type = Data_Types.String
+        ElseIf Field = Fields.Suspected_Drug Then
+            Data_Type = Data_Types.String
+        ElseIf Field = Fields.Journal_Entry Then
+            Data_Type = Data_Types.String
+        End If
+        Dim Output As Object = Nothing
+        If Data_Type = Data_Types.String Then
+            If Input.Trim = String.Empty Then
+                Output = ""
+            Else
+                Output = Input.Trim
+            End If
+        End If
+        If Data_Type = Data_Types.Date Then
+            If Input.Trim = String.Empty Then
+                Output = Nothing
+            Else
+                Output = CDate(Input.Trim)
+            End If
+        End If
+        If Data_Type = Data_Types.Integer Then
+            If Input.Trim = String.Empty Then
+                Output = Nothing
+            Else
+                Output = CInt(Input.Trim)
+            End If
+        End If
+        Return Output
+    End Function
+
+    Public Shared Function Add_Journal_Content(SubtableType As SubtableTypes, Hist_ID As Integer, [New] As Boolean, Deleted As Boolean, Field As Fields, Old_Value As Object, Input As Object) As Object
+        'Initialize and set Field_Text and Data_Type depending on which Field was passed as argument
+        Dim Field_Text As String = ""
+        Dim Data_Type As Data_Types
+        If Field = Fields.Initial_Setup_Date Then
+            Data_Type = Data_Types.Date
+            Field_Text = "Initial Setup Date"
+        ElseIf Field = Fields.Due_Date Then
+            Data_Type = Data_Types.Date
+            Field_Text = "Due Date"
+        ElseIf Field = Fields.Next_Step Then
+            Data_Type = Data_Types.String
+            Field_Text = "Next Step"
+        ElseIf Field = Fields.Next_Step_Due_date Then
+            Data_Type = Data_Types.Date
+            Field_Text = "Next Step Due Date"
+        ElseIf Field = Fields.Diagnosis Then
+            Field_Text = "Diagnosis"
+            Data_Type = Data_Types.String
+        ElseIf Field = Fields.End_Date Then
+            Field_Text = "End Date"
+            Data_Type = Data_Types.Date
+        ElseIf Field = Fields.Name Then
+            Field_Text = "Name"
+            Data_Type = Data_Types.String
+        ElseIf Field = Fields.Narrative Then
+            Field_Text = "Narrative"
+            Data_Type = Data_Types.String
+        ElseIf Field = Fields.Start_Date Then
+            Field_Text = "Start Date"
+            Data_Type = Data_Types.Date
+        ElseIf Field = Fields.Status Then
+            Field_Text = "Status"
+            Data_Type = Data_Types.String
+        ElseIf Field = Fields.Suspected_Drug Then
+            Field_Text = "Suspected Drug"
+            Data_Type = Data_Types.String
+        ElseIf Field = Fields.Journal_Entry Then
+            Field_Text = "Journal Entry"
+            Data_Type = Data_Types.String
+        Else
+            Field_Text = "Field Not Specified"
+            Data_Type = Data_Types.String
+        End If
+        'Format Hist_ID as String
+        Dim Hist_ID_String As String = ""
+        If Hist_ID = 0 Then
+            Hist_ID_String = ""
+        ElseIf Hist_ID <> 0 Then
+            Hist_ID_String = Hist_ID.ToString & " "
+        Else
+            Hist_ID_String = "Hist_ID Not Definable "
+        End If
+        'Initialize and populate variables to populate journal entries related to subtables 
+        Dim Subtabletype_Name As String
+        Dim Entry As String
+        If SubtableType = SubtableTypes.None Then
+            Subtabletype_Name = ""
+            Entry = ""
+            Hist_ID = Nothing
+        ElseIf SubtableType = SubtableTypes.DisHist Then
+            Subtabletype_Name = "Disease History "
+            Entry = "Entry "
+        ElseIf SubtableType = SubtableTypes.MedHist Then
+            Subtabletype_Name = "Medication History "
+            Entry = "Entry "
+        ElseIf SubtableType = SubtableTypes.Attached_File Then
+            Subtabletype_Name = "Attached File "
+            Entry = "Entry "
+        Else
+            Subtabletype_Name = "Subtabletype Not Specified"
+            Entry = ""
+        End If
+        'Format Input to use in comparison and set Input_String to use in Journal
+        Dim Input_Date As Date = Date.MinValue
+        Dim Input_String As String = ""
+        If Data_Type = Data_Types.Date Then
+            Dim ParseSuccess As Boolean = Date.TryParse(Input, Input_Date)
+            If Input_Date = Date.MinValue Then
+                Input_String = ""
+            Else
+                Input_String = Input_Date.ToShortDateString
+            End If
+        End If
+        If Data_Type = Data_Types.String Or Data_Type = Data_Types.Integer Then
+            Input = Input.Trim
+            Input_String = Input
+        End If
+        'Initialize and set Deleted_String and New_String depending on which boolean was passed as argument for 'Deleted' and 'New'
+        Dim Deleted_String As String = ""
+        Dim New_String As String = ""
+        If Deleted = True Then
+            Deleted_String = "Deleted "
+        End If
+        If [New] = True Then
+            New_String = "New "
+        End If
+        'Initialize Added_Content
+        Dim Added_Content As String = ""
+        'Set Added_Content for String Data_Type Fields
+        If Data_Type = Data_Types.String Then
+            If Field = Fields.Journal_Entry Then
+                If Input.Trim = String.Empty Then
+                    Added_Content = ""
+                ElseIf Input.Trim <> String.Empty Then
+                    Added_Content = "<p>" & Input_String & "<p/>"
+                End If
+                'If the current procedure is not for the removal of a subtable entry
+            ElseIf Deleted = False Then
+                'If both the Input and the Old_Value are empty
+                If Input.Trim = String.Empty And Old_Value = String.Empty Then
+                    Added_Content = ""
+                    'If the Input and the Old_Value are the same
+                ElseIf Input = Old_Value Then
+                    Added_Content = ""
+                    'If the Old_Value is being replaced by an empty String
+                ElseIf Input = String.Empty And Old_Value <> String.Empty Then
+                    Added_Content = New_String & Subtabletype_Name & Entry & Hist_ID_String & " < b > " & Field_Text & "</b> updated from <i>" & Old_Value & "</i> To <i>Nothing</i></br>"
+                    'If the Input is replacing and empty Old_Value
+                ElseIf (Input.Trim <> String.Empty And Old_Value = String.Empty) Then
+                    Added_Content = New_String & Subtabletype_Name & Entry & Hist_ID_String & "<b>" & Field_Text & "</b> updated from <i>Nothing</i> To <i>" & Input_String & "</i></br>"
+                    'If an existing Input is replacing and existing Old_Value
+                ElseIf (Input.Trim <> Old_Value) Then
+                    Added_Content = New_String & Subtabletype_Name & Entry & Hist_ID_String & "<b>" & Field_Text & "</b> updated from <i>" & Old_Value & "</i> To <i>" & Input_String & "</i></br>"
+                    'If an unspecified case occurs
+                Else
+                    Added_Content = "Unspecified database update. Please document manually"
+                End If
+                'If the current procedure is for the removal of a subtable entry
+            ElseIf Deleted = True Then
+                'If the Old_Value is not Nothing
+                If Old_Value <> String.Empty Then
+                    Added_Content = Deleted_String & Subtabletype_Name & Entry & Hist_ID_String & "<b>" & Field_Text & "</b> updated from <i>" & Old_Value & "</i> To <i>Nothing</i></br>"
+                    'If the Old_Value is Nothing
+                ElseIf Old_Value = String.Empty Then
+                    Added_Content = ""
+                    'If an unspecified case occurs
+                Else
+                    Added_Content = "Unspecified database update. Please document manually."
+                End If
+                'If an unspecified case occurs
+            Else
+                Added_Content = "Unspecified database update. Please document manually."
+            End If
+            'Set Added_Content for DateTime Data_Type Fields
+        ElseIf Data_Type = Data_Types.Date Then
+            'If the current procedure is not for the removal of a subtable entry
+            If Deleted = False Then
+                'If both the Input and the Old_Value are empty
+                If Input_Date = Date.MinValue And Old_Value Is Nothing Then
+                    Added_Content = ""
+                    'If the Input is replacing and empty Old_Value
+                ElseIf Input_Date > Date.MinValue And Old_Value Is Nothing Then
+                    Added_Content = New_String & Subtabletype_Name & Entry & Hist_ID_String & "<b>" & Field_Text & "</b> updated from <i>Nothing</i> To <i>" & Input_String & "</i></br>"
+                    'If the Input and the Old_Value are the same
+                ElseIf Input_Date = Old_Value Then
+                    Added_Content = ""
+                    'If the Old_Value is being replaced by an empty String
+                ElseIf Input_Date = Date.MinValue And Old_Value IsNot Nothing Then
+                    Added_Content = New_String & Subtabletype_Name & Entry & Hist_ID_String & "<b>" & Field_Text & "</b> updated from <i>" & Old_Value & "</i> To <i>Nothing</i></br>"
+                    'If an existing Input is replacing an existing Old_Value
+                ElseIf Input_Date <> Old_Value Then
+                    Added_Content = New_String & Subtabletype_Name & Entry & Hist_ID_String & "<b>" & Field_Text & "</b> updated from <i>" & Old_Value & "</i> To <i>" & Input_String & "</i></br>"
+                    'If an unspecified case occurs
+                Else
+                    Added_Content = "Unspecified database update. Please document manually."
+                End If
+                'If the current procedure is for the removal of a subtable entry
+            ElseIf Deleted = True Then
+                'If the Old_Value is not Nothing
+                If Old_Value IsNot Nothing Then
+                    Added_Content = Deleted_String & Subtabletype_Name & Entry & Hist_ID_String & "<b>" & Field_Text & "</b> updated from <i>" & Old_Value & "</i> To <i>Nothing</i></br>"
+                    'If the Old_Value is Nothing
+                ElseIf Old_Value Is Nothing Then
+                    Added_Content = ""
+                    'If an unspecified case occurs
+                Else
+                    Added_Content = "Unspecified database update. Please document manually."
+                End If
+                'If an unspecified case occurs
+            Else
+                Added_Content = "Unspecified database update. Please document manually."
+            End If
+            'Set Added_Content for Integer Data_Type Fields
+        ElseIf Data_Type = Data_Types.Integer Then
+            'If the current procedure is not for the removal of a subtable entry
+            If Deleted = False Then
+                'If both the Input and the Old_Value are empty
+                If Input Is Nothing And Old_Value Is Nothing Then
+                    Added_Content = ""
+                    'If the Input and the Old_Value are the same
+                ElseIf Input = Old_Value Then
+                    Added_Content = ""
+                    'If the Old_Value is being replaced by Nothing
+                ElseIf Input Is Nothing And Old_Value IsNot Nothing Then
+                    Added_Content = New_String & Subtabletype_Name & Entry & Hist_ID_String & "<b>" & Field_Text & "</b> updated from <i>" & Old_Value & "</i> To <i>Nothing</i></br>"
+                    'If the Input is replacing and empty Old_Value
+                ElseIf Input IsNot Nothing And Old_Value Is Nothing Then
+                    Added_Content = New_String & Subtabletype_Name & Entry & Hist_ID_String & "<b>" & Field_Text & "</b> updated from <i>Nothing</i> To <i>" & Input_String & "</i></br>"
+                    'If an existing Input is replacing an existing Old_Value
+                ElseIf Input <> Old_Value Then
+                    Added_Content = New_String & Subtabletype_Name & Entry & Hist_ID_String & "<b>" & Field_Text & "</b> updated from <i>" & Old_Value & "</i> To <i>" & Input_String & "</i></br>"
+                    'If an unspecified case occurs
+                Else
+                    Added_Content = "Unspecified database update. Please document manually."
+                End If
+                'If the current procedure is for the removal of a subtable entry
+            ElseIf Deleted = True Then
+                'If the Old_Value is not Nothing
+                If Old_Value IsNot Nothing Then
+                    Added_Content = Deleted_String & Subtabletype_Name & Entry & Hist_ID_String & "<b>" & Field_Text & "</b> updated from <i>" & Old_Value & "</i> To <i>Nothing</i></br>"
+                    'If the Old_Value is Nothing
+                ElseIf Old_Value Is Nothing Then
+                    Added_Content = ""
+                    'If an unspecified case occurs
+                Else
+                    Added_Content = "Unspecified database update. Please document manually."
+                End If
+                'If an unspecified case occurs
+            Else
+                Added_Content = "Unspecified database update. Please document manually."
+            End If
+            'If an unspecified case occurs
+        Else
+            Added_Content = "Unspecified database update. Please document manually."
+        End If
+        Return Added_Content
+    End Function
+End Class

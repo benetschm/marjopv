@@ -1,0 +1,178 @@
+﻿Imports System.Data
+Imports System.IO
+Imports System.Data.SqlClient
+Imports GlobalVariables
+
+Partial Class Account_CreatUser
+    Inherits System.Web.UI.Page
+
+    Protected Sub Page_Load(sender As Object, e As EventArgs) Handles Me.Load
+        If Page.IsPostBack = False Then
+            SaveNewAccount_Button.Visible = True
+            Cancel_Button.Visible = True
+            Status_Label.Visible = True
+            Status_Label.CssClass = "form-control alert-success"
+            Status_Label.Text = "Changes not saved"
+            Username_Row.Visible = True
+            Username_Textbox.ReadOnly = False
+            Username_Textbox.ToolTip = "Please enter a username"
+            Username_Textbox.CssClass = "form-control"
+            Password_Row.Visible = True
+            Password_Textbox.ReadOnly = False
+            Password_Textbox.ToolTip = "Please enter a password"
+            Password_Textbox.CssClass = "form-control"
+            ConfirmPassword_Row.Visible = True
+            ConfirmPassword_Textbox.ReadOnly = False
+            ConfirmPassword_Textbox.ToolTip = "Please confirm the password you have entered above"
+            ConfirmPassword_Textbox.CssClass = "form-control"
+            Name_Row.Visible = True
+            Name_Textbox.ReadOnly = False
+            Name_Textbox.ToolTip = "Please enter a full name"
+            Name_Textbox.CssClass = "form-control"
+            Phone_Row.Visible = True
+            Phone_Textbox.ReadOnly = False
+            Phone_Textbox.ToolTip = "Please enter your phone number in format +99-999-999999 (not mandatory)"
+            Phone_Textbox.CssClass = "form-control"
+            EMail_Row.Visible = True
+            EMail_Textbox.ReadOnly = False
+            EMail_Textbox.ToolTip = "Please enter your eMail address"
+            EMail_Textbox.CssClass = "form-control"
+            Active_Row.Visible = True
+            Active_Dropdownlist.Enabled = True
+            CanViewCompanies_Row.Visible = True
+            CanViewCompanies_Dropdownlist.Enabled = True
+        End If
+    End Sub
+
+    Protected Sub SaveNewAccount_Button_Click(sender As Object, e As EventArgs) Handles SaveNewAccount_Button.Click
+        If Page.IsValid = True Then
+            Dim Command As New SqlCommand("INSERT INTO [Users]([Name], [Password], [Name], [Phone], [Mail], [Active], [CanViewCompanies]) VALUES(@Name, @Password, @Name, @Phone, @Mail, @Active, @CanViewCompanies)", Connection)
+            Command.Parameters.Add("@Name", SqlDbType.NVarChar, 200)
+            Command.Parameters("@Name").Value = Username_Textbox.Text
+            Command.Parameters.Add("@Password", SqlDbType.NVarChar, 200)
+            Command.Parameters("@Password").Value = FormsAuthentication.HashPasswordForStoringInConfigFile(Password_Textbox.Text, System.Web.Configuration.FormsAuthPasswordFormat.SHA1.ToString())
+            Command.Parameters.Add("@Name", SqlDbType.NVarChar, 200)
+            Command.Parameters.Add("@Name", SqlDbType.NVarChar, 200)
+            Command.Parameters("@Name").Value = Name_Textbox.Text
+            Command.Parameters.Add("@Phone", SqlDbType.NVarChar, 200)
+            Command.Parameters("@Phone").Value = Phone_Textbox.Text
+            Command.Parameters.Add("@Mail", SqlDbType.NVarChar, 200)
+            Command.Parameters("@Mail").Value = EMail_Textbox.Text
+            Command.Parameters.Add("@Active", SqlDbType.Bit, 1)
+            Command.Parameters("@Active").Value = Active_Dropdownlist.SelectedValue
+            Command.Parameters.Add("@CanViewCompanies", SqlDbType.Bit)
+            Command.Parameters("@CanViewCompanies").Value = CanViewCompanies_Dropdownlist.SelectedValue
+            Connection.Open()
+            Command.ExecuteNonQuery()
+            Connection.Close()
+        End If
+    End Sub
+
+    Protected Sub Cancel_Button_Click(sender As Object, e As EventArgs) Handles Cancel_Button.Click
+
+    End Sub
+
+    Protected Sub Username_Textbox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        'Check if entered username is already in database and fail validation if yes
+        Dim Connection As New SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings("MarjoPV_ConnectionString").ConnectionString)
+        Dim Command As New SqlCommand("Select [Name] from [Users]", Connection)
+        Dim Reader As SqlDataReader
+        Connection.Open()
+        Reader = Command.ExecuteReader()
+        Dim Db_Username As String = ""
+        While Reader.Read()
+            Db_Username = Reader.GetString(0)
+            If Db_Username = Username_Textbox.Text Then
+                Username_Textbox.CssClass = "form-control alert-danger"
+                Username_Textbox.ToolTip = "The user name you have entered Is already taken. Please choose a different user name"
+                args.IsValid = False
+                Connection.Close()
+                Exit Sub
+            End If
+        End While
+        Connection.Close()
+        'Check if username was entered and fail validation if not
+        If Username_Textbox.Text = String.Empty Then
+            Username_Textbox.CssClass = "form-control alert-danger"
+            Username_Textbox.ToolTip = "Please make sure you are entering a valid user name"
+            args.IsValid = False
+        Else
+            Username_Textbox.CssClass = "form-control alert-success"
+            Username_Textbox.ToolTip = ""
+            args.IsValid = True
+        End If
+    End Sub
+    Protected Sub Password_Textbox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        'Check if password was entered and fail validation if not
+        If Password_Textbox.Text = String.Empty Then
+            Password_Textbox.CssClass = "form-control alert-danger"
+            Password_Textbox.ToolTip = "Please make sure you are entering a valid password"
+            args.IsValid = False
+        Else
+            Password_Textbox.CssClass = "form-control alert-success"
+            Password_Textbox.ToolTip = ""
+            args.IsValid = True
+        End If
+    End Sub
+    Protected Sub ConfirmPassword_Textbox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        'Check if password confirmation was entered and fail validation if not
+        If ConfirmPassword_Textbox.Text = String.Empty Then
+            ConfirmPassword_Textbox.CssClass = "form-control alert-danger"
+            ConfirmPassword_Textbox.ToolTip = "Please make sure you have confirmed the password"
+            args.IsValid = False
+            'Check if password confirmation matches password and fail validation if not
+        ElseIf ConfirmPassword_Textbox.Text <> Password_Textbox.Text Then
+            Password_Textbox.CssClass = "form-control alert-danger"
+            ConfirmPassword_Textbox.CssClass = "form-control alert-danger"
+            Password_Textbox.ToolTip = "The password And password confirmation entries Do Not match. Please re-enter"
+            ConfirmPassword_Textbox.ToolTip = "The password And password confirmation entries Do Not match. Please re-enter"
+            args.IsValid = False
+        Else
+            ConfirmPassword_Textbox.CssClass = "form-control alert-success"
+            ConfirmPassword_Textbox.ToolTip = ""
+            args.IsValid = True
+        End If
+    End Sub
+    Protected Sub Name_Textbox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        'Check if user full name was entered and fail validation if not
+        If Name_Textbox.Text = String.Empty Then
+            Name_Textbox.CssClass = "form-control alert-danger"
+            Name_Textbox.ToolTip = "Please make sure you are entering a valid full name"
+            args.IsValid = False
+        Else
+            Name_Textbox.CssClass = "form-control alert-success"
+            Name_Textbox.ToolTip = ""
+            args.IsValid = True
+        End If
+    End Sub
+    Protected Sub EMail_Textbox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If EMail_Textbox.Text = String.Empty Then
+            EMail_Textbox.CssClass = "form-control alert-danger"
+            EMail_Textbox.ToolTip = "Please make sure you are entering a valid eMail address"
+            args.IsValid = False
+        ElseIf (EMail_Textbox.Text Like "*[@]*?.[a-z]*") Then
+            EMail_Textbox.CssClass = "form-control alert-success"
+            EMail_Textbox.ToolTip = ""
+            args.IsValid = True
+        Else
+            EMail_Textbox.CssClass = "form-control alert-danger"
+            EMail_Textbox.ToolTip = "Please make sure you are entering a valid eMail address"
+            args.IsValid = False
+        End If
+    End Sub
+    Protected Sub Phone_Textbox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If Phone_Textbox.Text = String.Empty Then
+            Phone_Textbox.CssClass = "form-control alert-success"
+            Phone_Textbox.ToolTip = ""
+            args.IsValid = True
+        ElseIf Regex.IsMatch(Phone_Textbox.Text, "^[0-9-+]+$") Then
+            Phone_Textbox.CssClass = "form-control alert-success"
+            Phone_Textbox.ToolTip = ""
+            args.IsValid = True
+        Else
+            Phone_Textbox.CssClass = "form-control alert-danger"
+            Phone_Textbox.ToolTip = "Please make sure you are entering a valid phone number"
+            args.IsValid = False
+        End If
+    End Sub
+End Class
