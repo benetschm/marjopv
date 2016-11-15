@@ -58,6 +58,7 @@
                             <td>
                                 <asp:Textbox ID="Start_Textbox" runat="server" CssClass="form-control"></asp:Textbox>
                                 <asp:CustomValidator ID="Start_Textbox_Validator" runat="server" OnServerValidate="Start_Textbox_Validator_ServerValidate"></asp:CustomValidator>
+                                <asp:CustomValidator ID="Start_Textbox_Consistency_Validator" runat="server" OnServerValidate="StartStop_Textbox_Consistency_Validator_ServerValidate"></asp:CustomValidator>
                             </td>
                         </tr>
                         <tr ID="Stop_Row" runat="server">
@@ -65,6 +66,7 @@
                             <td>
                                 <asp:Textbox ID="Stop_Textbox" runat="server" CssClass="form-control"></asp:Textbox>
                                 <asp:CustomValidator ID="Stop_Textbox_Validator" runat="server" OnServerValidate="Stop_Textbox_Validator_ServerValidate"></asp:CustomValidator>
+                                <asp:CustomValidator ID="Stop_Textbox_Consistency_Validator" runat="server" OnServerValidate="StartStop_Textbox_Consistency_Validator_ServerValidate"></asp:CustomValidator>
                             </td>
                         </tr>
                         <tr ID="DrugAction_Row" runat="server">

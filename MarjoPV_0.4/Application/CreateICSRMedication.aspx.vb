@@ -233,6 +233,20 @@ Partial Class Application_CreateICSRMedication
         End If
     End Sub
 
+    Protected Sub StartStop_Textbox_Consistency_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If DateOrDateMinValue(Stop_Textbox.Text) >= DateOrDateMinValue(Start_Textbox.Text) Then
+            Stop_Textbox.CssClass = CssClassSuccess
+            Stop_Textbox.ToolTip = String.Empty
+            args.IsValid = True
+        Else
+            Start_Textbox.CssClass = CssClassFailure
+            Start_Textbox.ToolTip = DateInconsistencyValidationFailToolTip
+            Stop_Textbox.CssClass = CssClassFailure
+            Stop_Textbox.ToolTip = DateInconsistencyValidationFailToolTip
+            args.IsValid = False
+        End If
+    End Sub
+
     Protected Sub DrugActions_DropDownList_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
         DrugActions_DropDownList.CssClass = CssClassSuccess
         DrugActions_DropDownList.ToolTip = String.Empty

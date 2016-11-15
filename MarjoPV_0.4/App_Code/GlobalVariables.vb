@@ -54,6 +54,7 @@ Public Class GlobalVariables
     Public Shared SelectorValidationFailToolTip As String = "Please ensure you are selecting a valid entry."
     Public Shared MedDRATermValidationFailToolTip As String = "Please ensure you are selecting a valid MedDRA Low Level Term."
     Public Shared FileAttachValidationFailToolTip As String = "No file selected for upload"
+    Public Shared DateInconsistencyValidationFailToolTip As String = "There are inconsistencies between the dates you have entered. Please make sure you are making consistent entries"
     Public Shared ExpeditedReportingConsistencyValidationFailToolTip As String = "There are inconsistencies in the entries related to expedited reporting. Please ensure you are making consistent entries"
     Public Shared ReportTypeUniquenessValidationFailToolTip As String = "The report type you have selected has already been selected for this ICSR. Please select another report type"
     Public Shared RelationDuplicationFoundMessage As String = "The relation you have specifid has already been defined. Please specify a different relation."
