@@ -283,40 +283,26 @@ Partial Class Application_EditReport
     End Sub
 
     Protected Sub ReportReceived_TextBox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
-        If ReportReceived_TextBox.Text <> String.Empty Then 'If a date was entered
-            Try 'If a valid date was entered
-                DateTime.Parse(ReportReceived_TextBox.Text)
-                ReportReceived_TextBox.CssClass = "form-control alert-success"
-                ReportReceived_TextBox.ToolTip = String.Empty
-                args.IsValid = True
-            Catch ex As FormatException 'If an invalid date was entered
-                ReportReceived_TextBox.CssClass = "form-control alert-danger"
-                ReportReceived_TextBox.ToolTip = "Please ensure you are entering a valid date"
-                args.IsValid = False
-            End Try
-        Else 'If no date was entered
-            ReportReceived_TextBox.CssClass = "form-control alert-danger"
-            ReportReceived_TextBox.ToolTip = "Please ensure you are entering a date"
+        If DateValidator(ReportReceived_TextBox) = True Then
+            ReportReceived_TextBox.CssClass = CssClassSuccess
+            ReportReceived_TextBox.ToolTip = String.Empty
+            args.IsValid = True
+        Else
+            ReportReceived_TextBox.CssClass = CssClassFailure
+            ReportReceived_TextBox.ToolTip = DateValidationFailToolTip
             args.IsValid = False
         End If
     End Sub
 
     Protected Sub ReportDue_TextBox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
-        If ReportDue_TextBox.Text <> String.Empty Then 'If a date was entered
-            Try 'If a valid date was entered
-                DateTime.Parse(ReportDue_TextBox.Text)
-                ReportDue_TextBox.CssClass = "form-control alert-success"
-                ReportDue_TextBox.ToolTip = String.Empty
-                args.IsValid = True
-            Catch ex As FormatException 'If an invalid date was entered
-                ReportDue_TextBox.CssClass = "form-control alert-danger"
-                ReportDue_TextBox.ToolTip = "Please ensure you are entering a valid date"
-                args.IsValid = False
-            End Try
-        Else 'If no date was entered
-            ReportDue_TextBox.CssClass = "form-control alert-success"
+        If DateOrEmptyValidator(ReportDue_TextBox) = True Then
+            ReportDue_TextBox.CssClass = CssClassSuccess
             ReportDue_TextBox.ToolTip = String.Empty
             args.IsValid = True
+        Else
+            ReportDue_TextBox.CssClass = CssClassFailure
+            ReportDue_TextBox.ToolTip = DateValidationFailToolTip
+            args.IsValid = False
         End If
     End Sub
 

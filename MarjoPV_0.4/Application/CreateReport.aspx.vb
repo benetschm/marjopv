@@ -216,7 +216,7 @@ Partial Class Application_CreateReport
 
     Protected Sub ReportType_DropDownList_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
         Dim CurrentICSR_ID As Integer = ICSRID_HiddenField.Value
-        If ReportType_DropDownList.SelectedValue <> -1 Then 'If a report type was selected
+        If ReportType_DropDownList.SelectedValue <> 0 Then 'If a report type was selected
             Dim NewReporTypeMatchesOldReportType As Boolean = False
             Dim ExistingReportTypesReadCommand As New SqlCommand("SELECT ReportTypes.ID FROM Reports INNER JOIN ReportTypes ON Reports.ReportType_ID = ReportTypes.ID WHERE Reports.ICSR_ID = @CurrentICSR_ID", Connection)
             ExistingReportTypesReadCommand.Parameters.AddWithValue("@CurrentICSR_ID", CurrentICSR_ID)
@@ -250,7 +250,7 @@ Partial Class Application_CreateReport
     End Sub
 
     Protected Sub ReportReceived_TextBox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
-        If DateOrEmptyValidator(ReportReceived_TextBox) = True Then
+        If DateValidator(ReportReceived_TextBox) = True Then
             ReportReceived_TextBox.CssClass = CssClassSuccess
             ReportReceived_TextBox.ToolTip = String.Empty
             args.IsValid = True
@@ -262,7 +262,7 @@ Partial Class Application_CreateReport
     End Sub
 
     Protected Sub ReportDue_TextBox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
-        If DateValidator(ReportDue_TextBox) = True Then
+        If DateOrEmptyValidator(ReportDue_TextBox) = True Then
             ReportDue_TextBox.CssClass = CssClassSuccess
             ReportDue_TextBox.ToolTip = String.Empty
             args.IsValid = True
