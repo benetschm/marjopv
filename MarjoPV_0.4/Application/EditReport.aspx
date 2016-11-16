@@ -13,6 +13,7 @@
             <div id="ButtonGroup_Div" class="panel btn-group" runat="server">
                 <asp:button ID="SaveUpdates_Button" runat="server" class="btn btn-primary" Text="Save Updates"></asp:button>
                 <asp:button ID="ConfirmDeletion_Button" runat="server" class="btn btn-danger" Text="Confirm Deletion" ></asp:button>
+                <asp:button ID="PopulateReporterFromLastReport_Button" runat="server" class="btn btn-primary" Text="Populate Reporter From Last Report" Visible="false"></asp:button>
                 <asp:button ID="Cancel_Button" runat="server" class="btn btn-primary" Text="Cancel"></asp:button>
                 <asp:button ID="ReturnToICSROverview_Button" runat="server" class="btn btn-primary" Text="ICSR Overview"></asp:button>
             </div>

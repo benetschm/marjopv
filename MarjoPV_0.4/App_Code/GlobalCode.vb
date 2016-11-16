@@ -556,9 +556,9 @@ Public Class GlobalCode
         UpdateToStatusesReadCommand.Parameters.AddWithValue("@CurrentICSR_ID", CurrentICSR_ID)
         Dim UpdateToStatusesDatatable As New DataTable()
         UpdateToStatusesDatatable.Columns.AddRange(New DataColumn(2) {
-                                                                     New DataColumn("Status_ID", Type.GetType("System.Int32")),
-                                                                     New DataColumn("Status_Name", Type.GetType("System.String")),
-                                                                     New DataColumn("Status_SortOrder", Type.GetType("System.Int32"))
+                                                                     New DataColumn("ID", Type.GetType("System.Int32")),
+                                                                     New DataColumn("Name", Type.GetType("System.String")),
+                                                                     New DataColumn("SortOrder", Type.GetType("System.Int32"))
                                                                      })
         UpdateToStatusesDatatable.Rows.Add(CurrentStatus_ID, CurrentStatus_Name, CurrentStatus_SortOrder) 'Add row with current Status so that users can specify that the status should remain unchanged
         Dim UpdateToStatus_ID As Integer = Nothing
@@ -580,7 +580,7 @@ Public Class GlobalCode
         Finally
             Connection.Close()
         End Try
-        UpdateToStatusesDatatable.DefaultView.Sort = "Status_SortOrder"
+        UpdateToStatusesDatatable.DefaultView.Sort = "SortOrder"
         Return UpdateToStatusesDatatable
     End Function
 
@@ -619,14 +619,45 @@ Public Class GlobalCode
         Return AssigneesDropDownList_DataTable
     End Function
 
+    Public Shared Function CreateAccessibleCompaniesDropDownListDatatable(table As tables) As DataTable
+        Dim tableName As String = [Enum].GetName(GetType(tables), table)
+        Dim DropDownListReadCommandString As String = String.Empty
+        DropDownListReadCommandString = "SELECT DISTINCT " & tableName & ".ID, Name, SortOrder FROM " & tableName & " INNER JOIN RoleAllocations ON " & tableName & ".ID = RoleAllocations.Company_ID WHERE RoleAllocations.User_ID = @LoggedIn_User_ID AND " & tableName & ".Active = @Active"
+        Dim DropDownListReadCommand As New SqlCommand(DropDownListReadCommandString, Connection)
+        DropDownListReadCommand.Parameters.AddWithValue("@LoggedIn_User_ID", LoggedIn_User_ID)
+        DropDownListReadCommand.Parameters.AddWithValue("@Active", 1)
+        Dim DropDownListDataTable As New DataTable()
+        DropDownListDataTable.Columns.AddRange(New DataColumn(2) {
+                                                         New DataColumn("ID", Type.GetType("System.Int32")),
+                                                         New DataColumn("Name", Type.GetType("System.String")),
+                                                         New DataColumn("SortOrder", Type.GetType("System.Int32"))
+                                                         })
+        DropDownListDataTable.Rows.Add(0, "Select", 0)
+        Dim ID As Integer = Nothing
+        Dim Name As String = String.Empty
+        Dim SortOrder As Integer = Nothing
+        Try
+            Connection.Open()
+            Dim DropDownListReader As SqlDataReader = DropDownListReadCommand.ExecuteReader()
+            While DropDownListReader.Read()
+                ID = DropDownListReader.GetInt32(0)
+                Name = DropDownListReader.GetString(1)
+                SortOrder = DropDownListReader.GetInt32(2)
+                DropDownListDataTable.Rows.Add(ID, Name, SortOrder)
+            End While
+        Catch ex As Exception
+            DropDownListDataTable.Rows.Add(-1, DatabaseConnectionErrorString, 0)
+        Finally
+            Connection.Close()
+        End Try
+        DropDownListDataTable.DefaultView.Sort = "SortOrder"
+        Return DropDownListDataTable
+    End Function
+
     Public Shared Function CreateDropDownListDatatable(table As tables) As DataTable
         Dim tableName As String = [Enum].GetName(GetType(tables), table)
         Dim DropDownListReadCommandString As String = String.Empty
-        If System.Web.HttpContext.Current.Request.Url.AbsolutePath Like "*ICSRs.aspx" And table = tables.Companies Then 'If the function is called to populate the companies search field on ICSRs, limit the result set to the companies the user has access to as per the role allocations table
-            DropDownListReadCommandString = "SELECT DISTINCT " & tableName & ".ID, Name, SortOrder FROM " & tableName & " INNER JOIN RoleAllocations ON " & tableName & ".ID = RoleAllocations.Company_ID WHERE RoleAllocations.User_ID = @LoggedIn_User_ID AND " & tableName & ".Active = @Active"
-        Else 'If the function is called anywhere else than to populate the companies search field on ICSRs
-            DropDownListReadCommandString = "SELECT DISTINCT ID, Name, SortOrder FROM " & tableName & " WHERE Active = @Active"
-        End If
+        DropDownListReadCommandString = "SELECT DISTINCT ID, Name, SortOrder FROM " & tableName & " WHERE Active = @Active"
         Dim DropDownListReadCommand As New SqlCommand(DropDownListReadCommandString, Connection)
         DropDownListReadCommand.Parameters.AddWithValue("@LoggedIn_User_ID", LoggedIn_User_ID)
         DropDownListReadCommand.Parameters.AddWithValue("@Active", 1)

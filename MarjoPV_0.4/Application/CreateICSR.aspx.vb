@@ -18,22 +18,10 @@ Partial Class Application_CreateICSR
                     Companies_DropDownList.ToolTip = "Please select a company"
                     Companies_DropDownList.CssClass = "form-control"
                     'Populate Companies_Dropdownlist
-                    Dim CompaniesReadCommand As New SqlCommand("SELECT RoleAllocations.Company_ID AS Company_ID, Companies.Name AS Company_Name FROM RoleAllocations INNER JOIN Roles ON RoleAllocations.Role_ID = Roles.ID INNER JOIN Companies ON RoleAllocations.Company_ID = Companies.ID WHERE Companies.Active = @Active AND Roles.CanCreateICSRs = @CanCreateICSRs AND User_ID = @ID ORDER BY Companies.SortOrder", Connection)
-                    CompaniesReadCommand.Parameters.AddWithValue("@Active", 1)
-                    CompaniesReadCommand.Parameters.AddWithValue("@CanCreateICSRs", 1)
-                    CompaniesReadCommand.Parameters.AddWithValue("@ID", LoggedIn_User_ID)
-                    Try
-                        Connection.Open()
-                        Companies_DropDownList.DataSource = CompaniesReadCommand.ExecuteReader()
-                        Companies_DropDownList.DataValueField = "Company_ID"
-                        Companies_DropDownList.DataTextField = "Company_Name"
-                        Companies_DropDownList.DataBind()
-                        Connection.Close()
-                    Catch ex As Exception
-                        Connection.Close()
-                        Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                        Exit Sub
-                    End Try
+                    Companies_DropDownList.DataSource = CreateAccessibleCompaniesDropDownListDatatable(tables.Companies)
+                    Companies_DropDownList.DataValueField = "ID"
+                    Companies_DropDownList.DataTextField = "Name"
+                    Companies_DropDownList.DataBind()
                 Else
                     Title_Label.Text = Lockout_Text
                     ButtonGroup_Div.Visible = False

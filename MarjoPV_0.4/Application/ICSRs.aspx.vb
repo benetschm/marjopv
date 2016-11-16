@@ -21,7 +21,7 @@ Partial Class Application_ICSRs
                 If LoggedIn_User_CanViewCompanies = True Then
                     ICSRCompany_Label.Visible = True
                     Companies_Filter_DropDownList_ICSRs.Visible = True
-                    Companies_Filter_DropDownList_ICSRs.DataSource = CreateDropDownListDatatable(tables.Companies)
+                    Companies_Filter_DropDownList_ICSRs.DataSource = CreateAccessibleCompaniesDropDownListDatatable(tables.Companies)
                     Companies_Filter_DropDownList_ICSRs.DataValueField = "ID"
                     Companies_Filter_DropDownList_ICSRs.DataTextField = "Name"
                     Companies_Filter_DropDownList_ICSRs.DataBind()
