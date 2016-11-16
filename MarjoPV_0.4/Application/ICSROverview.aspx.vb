@@ -449,7 +449,7 @@ Partial Class Application_ICSROverview
     Protected Sub CreateICSRMedication_Button_Click(sender As Object, e As EventArgs)
         Dim CurrentICSR_ID As Integer = ICSRID_HiddenField.Value
         Dim CreateICSRMedication_Button As Button = CType(sender, Button)
-        Response.Redirect("~/Application/CreateICSRMedication.aspx?ICSRID=" & CurrentICSR_ID)
+        Response.Redirect("~/Application/EditICSRMedication.aspx?ICSRID=" & CurrentICSR_ID)
     End Sub
 
     Protected Sub EditICSRMedication_Button_Click(sender As Object, e As EventArgs)

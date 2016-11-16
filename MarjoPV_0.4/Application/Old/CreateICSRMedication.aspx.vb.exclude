@@ -1,0 +1,141 @@
+﻿Imports System.Data
+Imports System.IO
+Imports System.Data.SqlClient
+Imports GlobalVariables
+Imports GlobalCode
+
+Partial Class Application_CreateICSRMedication
+    Inherits System.Web.UI.Page
+
+    Protected Sub Page_Load(sender As Object, e As EventArgs) Handles Me.Load
+        If Page.IsPostBack = False Then
+
+        End If
+    End Sub
+
+    Protected Sub Medications_DropDownList_SelectedIndexChanged(sender As Object, e As EventArgs)
+        Dim Medications_DropDownList_SelectedValue_DoseType_Name As String = String.Empty
+        Dim DoseTypeReadCommand As New SqlCommand("SELECT DoseTypes.Name FROM Medications INNER JOIN DoseTypes ON DoseTypes.ID = Medications.DoseType_ID WHERE Medications.ID = @SelectedMedication_ID", Connection)
+        DoseTypeReadCommand.Parameters.AddWithValue("@SelectedMedication_ID", Medications_DropDownList.SelectedValue)
+        Try
+            Connection.Open()
+            Dim DoseTypeReader As SqlDataReader = DoseTypeReadCommand.ExecuteReader()
+            While DoseTypeReader.Read()
+                Medications_DropDownList_SelectedValue_DoseType_Name = DoseTypeReader.GetString(0)
+            End While
+        Catch ex As Exception
+            Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+            Exit Sub
+        Finally
+            Connection.Close()
+        End Try
+        If Medications_DropDownList.SelectedValue = 0 Then
+            TotalDailyDose_Label.Text = "Total Daily Dose:"
+        Else
+            TotalDailyDose_Label.Text = "Total Daily Dose (in " & Medications_DropDownList_SelectedValue_DoseType_Name & "):"
+        End If
+    End Sub
+
+    Protected Sub Cancel_Button_Click() Handles Cancel_Button.Click, ReturnToICSROverview_Button.Click
+        Dim CurrentICSR_ID As Integer = ICSRID_HiddenField.Value
+        Response.Redirect("~/Application/ICSROverview.aspx?ICSRID=" & CurrentICSR_ID)
+    End Sub
+
+    Protected Sub MedicationPerICSRRoles_DropDownList_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If SelectionValidator(MedicationPerICSRRoles_DropDownList) = True Then
+            MedicationPerICSRRoles_DropDownList.CssClass = CssClassSuccess
+            MedicationPerICSRRoles_DropDownList.ToolTip = String.Empty
+            args.IsValid = True
+        Else
+            MedicationPerICSRRoles_DropDownList.CssClass = CssClassFailure
+            MedicationPerICSRRoles_DropDownList.ToolTip = SelectorValidationFailToolTip
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub Medications_DropDownList_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If SelectionValidator(Medications_DropDownList) = True Then
+            Medications_DropDownList.CssClass = CssClassSuccess
+            Medications_DropDownList.ToolTip = String.Empty
+            args.IsValid = True
+        Else
+            Medications_DropDownList.CssClass = CssClassFailure
+            Medications_DropDownList.ToolTip = SelectorValidationFailToolTip
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub TotalDailyDose_Textbox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If IntegerOrEmptyValidator(TotalDailyDose_Textbox) = True Then
+            TotalDailyDose_Textbox.CssClass = CssClassSuccess
+            TotalDailyDose_Textbox.ToolTip = String.Empty
+            args.IsValid = True
+        Else
+            TotalDailyDose_Textbox.CssClass = CssClassFailure
+            TotalDailyDose_Textbox.ToolTip = NumberValidationFailToolTip
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub Allocations_Textbox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If IntegerOrEmptyValidator(Allocations_Textbox) = True Then
+            Allocations_Textbox.CssClass = CssClassSuccess
+            Allocations_Textbox.ToolTip = String.Empty
+            args.IsValid = True
+        Else
+            Allocations_Textbox.CssClass = CssClassFailure
+            Allocations_Textbox.ToolTip = NumberValidationFailToolTip
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub Start_Textbox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If DateOrEmptyValidator(Start_Textbox) = True Then
+            Start_Textbox.CssClass = CssClassSuccess
+            Start_Textbox.ToolTip = String.Empty
+            args.IsValid = True
+        Else
+            Start_Textbox.CssClass = CssClassFailure
+            Start_Textbox.ToolTip = DateValidationFailToolTip
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub Stop_Textbox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If DateOrEmptyValidator(Stop_Textbox) = True Then
+            Stop_Textbox.CssClass = CssClassSuccess
+            Stop_Textbox.ToolTip = String.Empty
+            args.IsValid = True
+        Else
+            Stop_Textbox.CssClass = CssClassFailure
+            Stop_Textbox.ToolTip = DateValidationFailToolTip
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub StartStop_Textbox_Consistency_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        If DateOrDateMinValue(Stop_Textbox.Text) >= DateOrDateMinValue(Start_Textbox.Text) Then
+            Stop_Textbox.CssClass = CssClassSuccess
+            Stop_Textbox.ToolTip = String.Empty
+            args.IsValid = True
+        Else
+            Start_Textbox.CssClass = CssClassFailure
+            Start_Textbox.ToolTip = DateInconsistencyValidationFailToolTip
+            Stop_Textbox.CssClass = CssClassFailure
+            Stop_Textbox.ToolTip = DateInconsistencyValidationFailToolTip
+            args.IsValid = False
+        End If
+    End Sub
+
+    Protected Sub DrugActions_DropDownList_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
+        DrugActions_DropDownList.CssClass = CssClassSuccess
+        DrugActions_DropDownList.ToolTip = String.Empty
+    End Sub
+
+    Protected Sub SaveUpdates_Button_Click(sender As Object, e As EventArgs) Handles SaveUpdates_Button.Click
+        If Page.IsValid = True Then
+
+        End If
+    End Sub
+
+End Class
