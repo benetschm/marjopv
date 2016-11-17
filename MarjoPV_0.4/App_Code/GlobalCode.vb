@@ -112,7 +112,7 @@ Public Class GlobalCode
 
     Public Enum [InputTypes]
         [Date]
-        Number
+        [Integer]
         Text
         Phone
         Email
@@ -689,6 +689,41 @@ Public Class GlobalCode
         Return DropDownListDataTable
     End Function
 
+    Public Shared Function CreateMedicationsPerCompanyDropDownListDatatable(table As tables, Company_ID As Integer) As DataTable
+        Dim tableName As String = [Enum].GetName(GetType(tables), table)
+        Dim DropDownListReadCommandString As String = String.Empty
+        DropDownListReadCommandString = "SELECT DISTINCT " & tableName & ".ID, " & tableName & ".Name, " & tableName & ".SortOrder FROM " & tableName & " INNER JOIN Companies ON " & tableName & ".Company_ID = @Company_ID WHERE Companies.Active = @Active"
+        Dim DropDownListReadCommand As New SqlCommand(DropDownListReadCommandString, Connection)
+        DropDownListReadCommand.Parameters.AddWithValue("@Company_ID", Company_ID)
+        DropDownListReadCommand.Parameters.AddWithValue("@Active", 1)
+        Dim DropDownListDataTable As New DataTable()
+        DropDownListDataTable.Columns.AddRange(New DataColumn(2) {
+                                                         New DataColumn("ID", Type.GetType("System.Int32")),
+                                                         New DataColumn("Name", Type.GetType("System.String")),
+                                                         New DataColumn("SortOrder", Type.GetType("System.Int32"))
+                                                         })
+        DropDownListDataTable.Rows.Add(0, "Select", 0)
+        Dim ID As Integer = Nothing
+        Dim Name As String = String.Empty
+        Dim SortOrder As Integer = Nothing
+        Try
+            Connection.Open()
+            Dim DropDownListReader As SqlDataReader = DropDownListReadCommand.ExecuteReader()
+            While DropDownListReader.Read()
+                ID = DropDownListReader.GetInt32(0)
+                Name = DropDownListReader.GetString(1)
+                SortOrder = DropDownListReader.GetInt32(2)
+                DropDownListDataTable.Rows.Add(ID, Name, SortOrder)
+            End While
+        Catch ex As Exception
+            DropDownListDataTable.Rows.Add(-1, DatabaseConnectionErrorString, 0)
+        Finally
+            Connection.Close()
+        End Try
+        DropDownListDataTable.DefaultView.Sort = "SortOrder"
+        Return DropDownListDataTable
+    End Function
+
     Public Shared Function CreateAEsOfCurrentICSRDropDownListDatatable(CurrentICSR_ID As Integer) As DataTable
         Dim DropDownListReadCommand As New SqlCommand("SELECT CASE WHEN AEs.ID IS NULL THEN 0 ELSE AEs.ID END AS ID, CASE WHEN MedDRATerm IS NULL THEN '' ELSE MedDRATerm END AS Name, CASE WHEN AEs.ID IS NULL THEN 0 ELSE AEs.ID END AS SortOrder FROM AEs INNER JOIN ICSRs On ICSRs.ID = AEs.ICSR_ID WHERE ICSRs.ID = @CurrentICSR_ID", Connection)
         DropDownListReadCommand.Parameters.AddWithValue("@CurrentICSR_ID", CurrentICSR_ID)
@@ -774,7 +809,7 @@ Public Class GlobalCode
 
     Public Shared Function TryCType(value As Object, InputType As InputTypes) As Object
         Dim Result As Object
-        If InputType = InputTypes.Number Then
+        If InputType = InputTypes.Integer Then
 
             Try
                 Result = CType(value, Integer)
@@ -969,7 +1004,7 @@ Public Class GlobalCode
 
     Public Shared Function Validation(Input As String, Type As InputTypes) As Boolean
         Dim ValidationSuccess As Boolean = False
-        If Type = InputTypes.Number Then
+        If Type = InputTypes.Integer Then
             Dim ConversionResult As Integer = Nothing
             Try
                 ConversionResult = CType(Input.Trim, Integer)
@@ -1087,7 +1122,7 @@ Public Class GlobalCode
 
     Public Shared Function IntegerValidator(Source As TextBox) As Boolean
         Dim Result As Boolean = False
-        If Validation(Source.Text.Trim, InputTypes.Number) = True Then
+        If Validation(Source.Text.Trim, InputTypes.Integer) = True Then
             Result = True
         End If
         Return Result
@@ -1095,7 +1130,7 @@ Public Class GlobalCode
 
     Public Shared Function IntegerOrEmptyValidator(Source As TextBox) As Boolean
         Dim Result As Boolean = False
-        If Validation(Source.Text.Trim, InputTypes.Number) = True Then
+        If Validation(Source.Text.Trim, InputTypes.Integer) = True Then
             Result = True
         ElseIf Source.Text.Trim = String.Empty Then
             Result = True

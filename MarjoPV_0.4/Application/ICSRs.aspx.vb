@@ -80,11 +80,11 @@ Partial Class Application_ICSRs
         Else
             Input_ID = Nothing
         End If
-        Dim Input_Company_ID As Integer = TryCType(Companies_Filter_DropDownList_ICSRs.SelectedValue, InputTypes.Number)
+        Dim Input_Company_ID As Integer = TryCType(Companies_Filter_DropDownList_ICSRs.SelectedValue, InputTypes.Integer)
         Dim Input_PatientInitials As String = TryCType(PatientInitials_Filter_Textbox.Text, InputTypes.Text)
-        Dim Input_ICSRStatus_ID As Integer = TryCType(ICSRStatuses_Filter_DropDownList.SelectedValue, InputTypes.Number)
-        Dim Input_Assignee_ID As Integer = TryCType(Assignees_Filter_DropDownList.SelectedValue, InputTypes.Number)
-        Dim Input_IsSerious_ID As Integer = TryCType(IsSerious_Filter_DropDownList.SelectedValue, InputTypes.Number)
+        Dim Input_ICSRStatus_ID As Integer = TryCType(ICSRStatuses_Filter_DropDownList.SelectedValue, InputTypes.Integer)
+        Dim Input_Assignee_ID As Integer = TryCType(Assignees_Filter_DropDownList.SelectedValue, InputTypes.Integer)
+        Dim Input_IsSerious_ID As Integer = TryCType(IsSerious_Filter_DropDownList.SelectedValue, InputTypes.Integer)
         Dim Input_ID_Component As String = String.Empty
         If Input_ID <> Nothing Then
             Input_ID_Component = " AND ICSRs.ID = " & Input_ID

@@ -211,7 +211,7 @@ Partial Class Application_EditRelation
             Dim CurrentRelation_ID As Integer = RelationID_HiddenField.Value
             Dim CurrentICSR_ID As Integer = ICSRID_HiddenField.Value
             'Retrieve values as present in database at edit page load and store in variables to use when checking for database update conflicts (see page load event)
-            Dim AtEditPageLoad_AE_ID As Integer = TryCType(AtEditPageLoad_AE_HiddenField.Value, InputTypes.Number)
+            Dim AtEditPageLoad_AE_ID As Integer = TryCType(AtEditPageLoad_AE_HiddenField.Value, InputTypes.Integer)
             Dim AtEditPageLoad_MedicationPerICSR_ID As Integer = AtEditPageLoad_MedicationPerICSR_HiddenField.Value
             Dim AtEditPageLoad_RelatednessCriterionReporter_ID As Integer = AtEditPageLoad_RelatednessCriterionReporter_HiddenField.Value
             Dim AtEditPageLoad_RelatednessCriteriaManufacturer_ID As Integer = AtEditPageLoad_RelatednessCriteriaManufacturer_HiddenField.Value

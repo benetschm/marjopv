@@ -129,7 +129,7 @@ Partial Class Administration_CreateReportStatus
             Command.Parameters.AddWithValue("@Name", Name_Textbox.Text.Trim)
             Command.Parameters.AddWithValue("@IsStatusNew", IsStatusNew_DropDownList.SelectedValue)
             Command.Parameters.AddWithValue("@IsStatusClosed", IsStatusClosed_DropDownList.SelectedValue)
-            Command.Parameters.AddWithValue("@SortOrder", TryCType(SortOrder_Textbox.Text, InputTypes.Number))
+            Command.Parameters.AddWithValue("@SortOrder", TryCType(SortOrder_Textbox.Text, InputTypes.Integer))
             Command.Parameters.AddWithValue("@Active", Active_DropDownList.SelectedValue)
             Try
                 Connection.Open()

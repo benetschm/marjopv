@@ -1,0 +1,44 @@
+    Protected Sub Page_Load(sender As Object, e As EventArgs) Handles Me.Load
+
+        'Carry out Sub only on initial page load
+       
+        'Redirect to login if user is not logged in
+        
+        'Determine why page was called, store reason in variables and redirect to parent page if query string is invalid
+       
+        'Store query string values in hidden fields and variables
+        
+        'Populate Title_Label
+        
+        'Lock out if user does not have adequate edit rights
+       
+        'Format controls based on edit rights
+       
+        'Populate DropDownLists
+       
+        'Populate data fields
+        
+    End Sub
+
+    
+
+    Protected Sub SaveUpdates_Button_Click(sender As Object, e As EventArgs) Handles SaveUpdates_Button.Click, ConfirmDeletion_Button.Click
+
+        'Carry out Sub only if input is valid
+        
+        'Redirect to login if user is not logged in
+        
+        'Determine why page was called and store reason in variables
+        
+        'Store values from hidden fields in variables
+        
+        'Lock out if user does not have adequate edit rights
+        
+        'Format Controls
+        
+        'Warn & abort if there are discrepancies between the data as shown at edit page load and as stored at save button click
+        
+        'Store updates in database
+
+        'Add audit trail entry
+    End Sub

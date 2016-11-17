@@ -421,7 +421,7 @@ Partial Class Application_EditICSRMedication
     End Sub
 
     Protected Sub TotalDailyDose_Textbox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
-        If Validation(TotalDailyDose_Textbox.Text, InputTypes.Number) = True Then
+        If Validation(TotalDailyDose_Textbox.Text, InputTypes.Integer) = True Then
             TotalDailyDose_Textbox.CssClass = CssClassSuccess
             TotalDailyDose_Textbox.ToolTip = String.Empty
             args.IsValid = True
@@ -437,7 +437,7 @@ Partial Class Application_EditICSRMedication
     End Sub
 
     Protected Sub Allocations_Textbox_Validator_ServerValidate(source As Object, args As ServerValidateEventArgs)
-        If Validation(Allocations_Textbox.Text, InputTypes.Number) = True Then
+        If Validation(Allocations_Textbox.Text, InputTypes.Integer) = True Then
             Allocations_Textbox.CssClass = CssClassSuccess
             Allocations_Textbox.ToolTip = String.Empty
             args.IsValid = True
@@ -509,8 +509,8 @@ Partial Class Application_EditICSRMedication
                 Dim InsertCommand As New SqlCommand("INSERT INTO MedicationsPerICSR (ICSR_ID, Medication_ID, TotalDailyDose, Allocations, Start, Stop, DrugAction_ID, MedicationPerICSRRole_ID) VALUES(@CurrentICSR_ID, @Medication_ID, CASE WHEN @TotalDailyDose = 0 THEN NULL ELSE @TotalDailyDose END, CASE WHEN @Allocations = 0 THEN NULL ELSE @Allocations END, CASE WHEN @Start = '' THEN NULL ELSE @Start END, CASE WHEN @Stop = '' THEN NULL ELSE @Stop END, CASE WHEN @DrugAction_ID = 0 THEN NULL ELSE @DrugAction_ID END, CASE WHEN @MedicationPerICSRRole_ID = 0 THEN NULL ELSE @MedicationPerICSRRole_ID END)", Connection)
                 InsertCommand.Parameters.AddWithValue("@CurrentICSR_ID", CurrentICSR_ID)
                 InsertCommand.Parameters.AddWithValue("@Medication_ID", Medications_DropDownList.SelectedValue)
-                InsertCommand.Parameters.AddWithValue("@TotalDailyDose", TryCType(TotalDailyDose_Textbox.Text.Trim, InputTypes.Number))
-                InsertCommand.Parameters.AddWithValue("@Allocations", TryCType(Allocations_Textbox.Text.Trim, InputTypes.Number))
+                InsertCommand.Parameters.AddWithValue("@TotalDailyDose", TryCType(TotalDailyDose_Textbox.Text.Trim, InputTypes.Integer))
+                InsertCommand.Parameters.AddWithValue("@Allocations", TryCType(Allocations_Textbox.Text.Trim, InputTypes.Integer))
                 InsertCommand.Parameters.AddWithValue("@Start", DateStringOrEmpty(Start_Textbox.Text.Trim))
                 InsertCommand.Parameters.AddWithValue("@Stop", DateStringOrEmpty(Stop_Textbox.Text.Trim))
                 InsertCommand.Parameters.AddWithValue("@DrugAction_ID", DrugActions_DropDownList.SelectedValue)
