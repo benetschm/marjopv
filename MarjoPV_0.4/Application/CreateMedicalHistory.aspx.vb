@@ -129,27 +129,27 @@ Partial Class Application_CreateMedicalHistory
             Finally
                 Connection.Close()
             End Try
-            Dim EntryString As String = String.Empty
-            EntryString = HistoryDatabasebUpdateIntro
-            EntryString += NewReportIntro("Medical History Entry", NewMedicalHistory_ID)
-            EntryString += HistoryEnrtyPlainValue("Medical History Entry", NewMedicalHistory_ID, "MedDRA LLT", String.Empty, NewMedicalHistory_MedDRATerm)
-            EntryString += HistoryEnrtyPlainValue("Medical History Entry", NewMedicalHistory_ID, "Start Date", Date.MinValue, NewMedicalHistory_Start)
-            EntryString += HistoryEnrtyPlainValue("Medical History Entry", NewMedicalHistory_ID, "Stop Date", Date.MinValue, NewMedicalHistory_Stop)
-            EntryString += HistoryDatabasebUpdateOutro
-            Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories(ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, @Entry)", Connection)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-            Try
-                Connection.Open()
-                InsertHistoryEntryCommand.ExecuteNonQuery()
-            Catch ex As Exception
-                Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                Exit Sub
-            Finally
-                Connection.Close()
-            End Try
+            'Dim EntryString As String = String.Empty
+            'EntryString = HistoryDatabasebUpdateIntro
+            'EntryString += NewReportIntro("Medical History Entry", NewMedicalHistory_ID)
+            'EntryString += HistoryEntryPlainValue("Medical History Entry", NewMedicalHistory_ID, "MedDRA LLT", String.Empty, NewMedicalHistory_MedDRATerm)
+            'EntryString += HistoryEntryPlainValue("Medical History Entry", NewMedicalHistory_ID, "Start Date", Date.MinValue, NewMedicalHistory_Start)
+            'EntryString += HistoryEntryPlainValue("Medical History Entry", NewMedicalHistory_ID, "Stop Date", Date.MinValue, NewMedicalHistory_Stop)
+            'EntryString += HistoryDatabasebUpdateOutro
+            'Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories(ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, @Entry)", Connection)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
+            'Try
+            '    Connection.Open()
+            '    InsertHistoryEntryCommand.ExecuteNonQuery()
+            'Catch ex As Exception
+            '    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+            '    Exit Sub
+            'Finally
+            '    Connection.Close()
+            'End Try
             'Format Page Controls
             AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, Nothing, Cancel_Button, ReturnToICSROverview_Button)
             TextBoxReadOnly(MedDRATerm_Textbox)

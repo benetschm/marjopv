@@ -113,10 +113,17 @@ Public Class GlobalCode
     Public Enum [InputTypes]
         [Date]
         [Integer]
-        Text
+        [String]
+        [Boolean]
         Phone
         Email
         Selector
+    End Enum
+
+    Public Enum [PageCallReasons]
+        Create
+        Edit
+        Delete
     End Enum
 
     Public Shared Sub AtEditPageLoadButtonsFormat(Status_Label As Label, SaveUpdates_Button As Button, Delete_Button As Button, ConfirmDeletion_Button As Button, Cancel_Button As Button, ReturnToICSROverview_Button As Button)
@@ -325,7 +332,16 @@ Public Class GlobalCode
         Return Datatable
     End Function
 
-    Public Shared Function HistoryEntryReferencedValue(tableName As String, ID As Integer, fieldName As String, referencetable As tables, referencefield As fields, AtSaveButtonClick_ID As Integer, Updated_ID As Integer) As String
+    Public Shared Function HistoryEntryReferencedValue(PageCallReason As PageCallReasons, tableName As String, ID As Integer, fieldName As String, referencetable As tables, referencefield As fields, AtSaveButtonClick_ID As Integer, Updated_ID As Integer) As String
+
+        If PageCallReason = PageCallReasons.Create Then
+            AtSaveButtonClick_ID = Nothing
+        End If
+
+        If PageCallReason = PageCallReasons.Delete Then
+            Updated_ID = Nothing
+        End If
+
         Dim ReturnString As String = String.Empty
         If AtSaveButtonClick_ID <> Updated_ID Then
             Dim referencetableName As String = [Enum].GetName(GetType(tables), referencetable)
@@ -370,7 +386,7 @@ Public Class GlobalCode
             Finally
                 Connection.Close()
             End Try
-            ReturnString = HistoryEnrtyPlainValue(tableName, ID, fieldName, AtSaveButtonClick_Name, Updated_Name)
+            ReturnString = HistoryEntryPlainValue(PageCallReason, tableName, ID, fieldName, AtSaveButtonClick_Name, Updated_Name)
         Else
             ReturnString = String.Empty
         End If
@@ -399,7 +415,28 @@ Public Class GlobalCode
         Return Result
     End Function
 
-    Public Shared Function HistoryEnrtyPlainValue(tableName As String, ID As Integer, fieldName As String, AtSaveButtonClick_Value As Object, Updated_Value As Object) As String
+    Public Shared Function HistoryEntryPlainValue(PageCallReason As PageCallReasons, tableName As String, ID As Integer, fieldName As String, AtSaveButtonClick_Value As Object, Updated_Value As Object) As String
+
+        If PageCallReason = PageCallReasons.Create Then
+            If TypeOf AtSaveButtonClick_Value Is String Then
+                AtSaveButtonClick_Value = String.Empty
+            ElseIf TypeOf AtSaveButtonClick_Value Is Integer Then
+                AtSaveButtonClick_Value = Nothing
+            ElseIf TypeOf AtSaveButtonClick_Value Is DateTime Then
+                AtSaveButtonClick_Value = Date.MinValue
+            End If
+        End If
+
+        If PageCallReason = PageCallReasons.Delete Then
+            If TypeOf Updated_Value Is String Then
+                Updated_Value = String.Empty
+            ElseIf TypeOf Updated_Value Is Integer Then
+                Updated_Value = Nothing
+            ElseIf TypeOf Updated_Value Is DateTime Then
+                Updated_Value = Date.MinValue
+            End If
+        End If
+
         Dim ReturnString As String = String.Empty
         If AtSaveButtonClick_Value <> Updated_Value Then
             Dim AtSaveButtonClick_Name As String = String.Empty
@@ -815,7 +852,7 @@ Public Class GlobalCode
                 Result = CType(value, Integer)
                 Return Result
             Catch ex As Exception
-                Result = Nothing
+                Result = 0
                 Return Result
             End Try
         End If
@@ -824,7 +861,7 @@ Public Class GlobalCode
                 Result = CType(value, Integer)
                 Return Result
             Catch ex As Exception
-                Result = Nothing
+                Result = 0
                 Return Result
             End Try
         End If
@@ -832,7 +869,7 @@ Public Class GlobalCode
             Result = DateOrDateMinValue(value)
             Return Result
         End If
-        If InputType = InputTypes.Text Then
+        If InputType = InputTypes.String Then
             Try
                 Result = CType(value, String)
                 Return Result
@@ -915,14 +952,6 @@ Public Class GlobalCode
         DropDownList.ToolTip = SelectorInputToolTip
         DropDownList.CssClass = "form-control"
     End Sub
-
-    Public Shared Function DiscrepancyCheck(AtEditPageLoadValue As Object, AtSaveButtonClickValue As Object, FieldName As String) As String
-        Dim DiscrepancyString As String = String.Empty
-        If AtEditPageLoadValue <> AtSaveButtonClickValue Then
-            DiscrepancyString = "<li>" & FieldName & " was changed</li>"
-        End If
-        Return DiscrepancyString
-    End Function
 
     Public Shared Function SqlDateDisplay(Value As DateTime) As String
         Dim Result As String = DateOrDateMinValue(Value).ToString("dd-MMM-yyyy")
@@ -1137,5 +1166,114 @@ Public Class GlobalCode
         End If
         Return Result
     End Function
+
+    Public Shared Function DiscrepancyCheck(TableToCheck As tables, FieldToCheck As fields, InputType As InputTypes, CurrentDataSet_ID As Integer, AtEditPageLoadHiddenField As HiddenField) As String
+        Dim DiscrepancyString As String = String.Empty
+        Dim TableToCheckName As String = [Enum].GetName(GetType(tables), TableToCheck)
+        Dim FieldToCheckName As String = [Enum].GetName(GetType(fields), FieldToCheck)
+        Dim AtSaveButtonClickReadCommand As New SqlCommand
+        AtSaveButtonClickReadCommand.Connection = Connection
+        AtSaveButtonClickReadCommand.Parameters.AddWithValue("@CurrentDataSet_ID", CurrentDataSet_ID)
+        Dim AtSaveButtonClickReader As SqlDataReader
+        If InputType = InputTypes.String Then
+            AtSaveButtonClickReadCommand.CommandText = "SELECT " & FieldToCheckName & " FROM " & TableToCheckName & " WHERE ID = @CurrentDataSet_ID"
+            Dim AtEditPageLoad_Value As String = AtEditPageLoadHiddenField.Value
+            Dim AtSaveButtonClick_Value As String = String.Empty
+            Try
+                Connection.Open()
+                AtSaveButtonClickReader = AtSaveButtonClickReadCommand.ExecuteReader()
+                While AtSaveButtonClickReader.Read()
+                    AtSaveButtonClick_Value = AtSaveButtonClickReader.GetString(0)
+                End While
+            Catch ex As Exception
+                DiscrepancyString = DatabaseConnectionErrorString
+            Finally
+                Connection.Close()
+            End Try
+            If AtEditPageLoad_Value <> AtSaveButtonClick_Value Then
+                DiscrepancyString += "<p>The database field '" & FieldToCheckName & "' was changed.</p>"
+            End If
+        ElseIf InputType = InputTypes.Integer Then
+            AtSaveButtonClickReadCommand.CommandText = "SELECT CASE WHEN " & FieldToCheckName & " IS NULL THEN 0 ELSE " & FieldToCheckName & " END AS " & FieldToCheckName & " FROM " & TableToCheckName & " WHERE ID = @CurrentDataSet_ID"
+            Dim AtEditPageLoad_Value As Integer = TryCType(AtEditPageLoadHiddenField.Value, InputTypes.Integer)
+            Dim AtSaveButtonClick_Value As Integer = Nothing
+            Try
+                Connection.Open()
+                AtSaveButtonClickReader = AtSaveButtonClickReadCommand.ExecuteReader()
+                While AtSaveButtonClickReader.Read()
+                    AtSaveButtonClick_Value = AtSaveButtonClickReader.GetInt32(0)
+                End While
+            Catch ex As Exception
+                DiscrepancyString = DatabaseConnectionErrorString
+            Finally
+                Connection.Close()
+            End Try
+            If AtEditPageLoad_Value <> AtSaveButtonClick_Value Then
+                DiscrepancyString += "<p>The database field '" & FieldToCheckName & "' was changed.</p>"
+            End If
+        ElseIf InputType = InputTypes.Date Then
+            AtSaveButtonClickReadCommand.CommandText = "SELECT CASE WHEN " & FieldToCheckName & " IS NULL THEN 0 ELSE " & FieldToCheckName & " END AS " & FieldToCheckName & " FROM " & TableToCheckName & " WHERE ID = @CurrentDataSet_ID"
+            Dim AtEditPageLoad_Value As DateTime = TryCType(AtEditPageLoadHiddenField.Value, InputTypes.Date)
+            Dim AtSaveButtonClick_Value As DateTime = DateTime.MinValue
+            Try
+                Connection.Open()
+                AtSaveButtonClickReader = AtSaveButtonClickReadCommand.ExecuteReader()
+                While AtSaveButtonClickReader.Read()
+                    AtSaveButtonClick_Value = AtSaveButtonClickReader.GetDateTime(0)
+                End While
+            Catch ex As Exception
+                DiscrepancyString = DatabaseConnectionErrorString
+            Finally
+                Connection.Close()
+            End Try
+            If AtEditPageLoad_Value <> DateOrDateMinValue(AtSaveButtonClick_Value) Then
+                DiscrepancyString += "<p>The database field '" & FieldToCheckName & "' was changed.</p>"
+            End If
+        ElseIf InputType = InputTypes.Boolean Then
+            AtSaveButtonClickReadCommand.CommandText = "SELECT CASE WHEN " & FieldToCheckName & " IS NULL THEN 0 ELSE " & FieldToCheckName & " END AS " & FieldToCheckName & " FROM " & TableToCheckName & " WHERE ID = @CurrentDataSet_ID"
+            Dim AtEditPageLoad_Value As Boolean = TryCType(AtEditPageLoadHiddenField.Value, InputTypes.Boolean)
+            Dim AtSaveButtonClick_Value As Boolean = False
+            Try
+                Connection.Open()
+                AtSaveButtonClickReader = AtSaveButtonClickReadCommand.ExecuteReader()
+                While AtSaveButtonClickReader.Read()
+                    AtSaveButtonClick_Value = AtSaveButtonClickReader.GetBoolean(0)
+                End While
+            Catch ex As Exception
+                DiscrepancyString = DatabaseConnectionErrorString
+            Finally
+                Connection.Close()
+            End Try
+            If AtEditPageLoad_Value <> AtSaveButtonClick_Value Then
+                DiscrepancyString += "<p>The database field '" & FieldToCheckName & "' was changed.</p>"
+            End If
+        End If
+        Return DiscrepancyString
+    End Function
+
+    Public Shared Sub ShowDiscrepancyWarning(Status_Label As Label, DiscrepancyString As String)
+        Status_Label.Style.Add("text-align", "left")
+        Status_Label.Style.Add("height", "auto")
+        Status_Label.Text = DiscrepancyStringIntro & DiscrepancyString & DiscrepancyStringOutro
+        Status_Label.CssClass = CssClassFailure
+    End Sub
+
+    Public Shared Sub SaveAuditTrailEntry(CurrentICSR_ID As Integer, LoggedIn_User_ID As Integer, EntryString As String)
+        If EntryString <> HistoryDatabasebUpdateIntro & HistoryDatabasebUpdateOutro Then
+            Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories(ICSR_ID, User_ID, Timepoint, Entry) VALUES (@CurrentICSR_ID, @User_ID, @Timepoint, @Entry)", Connection)
+            InsertHistoryEntryCommand.Parameters.AddWithValue("@CurrentICSR_ID", CurrentICSR_ID)
+            InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+            InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+            InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
+            Try
+                Connection.Open()
+                InsertHistoryEntryCommand.ExecuteNonQuery()
+            Catch ex As Exception
+                EntryString = DatabaseConnectionErrorString
+            Finally
+                Connection.Close()
+            End Try
+        End If
+    End Sub
 
 End Class

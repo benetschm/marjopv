@@ -725,39 +725,39 @@ Partial Class Application_EditReport
                     Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
                     Exit Sub
                 End Try
-                Dim EntryString As String = String.Empty
-                EntryString = HistoryDatabasebUpdateIntro
-                EntryString += NewReportIntro("Report", NewReport_ID)
-                EntryString += HistoryEntryReferencedValue("Report", NewReport_ID, "Type", tables.ReportTypes, fields.Name, Nothing, NewReportType_ID)
-                EntryString += HistoryEntryReferencedValue("Report", NewReport_ID, "Status", tables.ReportStatuses, fields.Name, Nothing, NewReportStatus_ID)
-                EntryString += HistoryEnrtyPlainValue("Report", NewReport_ID, "Received Date", Date.MinValue, NewReport_Received)
-                EntryString += HistoryEnrtyPlainValue("Report", NewReport_ID, "Due Date", Date.MinValue, NewReport_Due)
-                EntryString += HistoryEntryReferencedValue("Report", NewReport_ID, "Complexity", tables.ReportComplexities, fields.Name, Nothing, NewReportComplexity_ID)
-                EntryString += HistoryEntryReferencedValue("Report", NewReport_ID, "Source", tables.ReportSources, fields.Name, Nothing, NewReportSource_ID)
-                EntryString += HistoryEnrtyPlainValue("Report", NewReport_ID, "Reporter Name", String.Empty, NewReporterName)
-                EntryString += HistoryEnrtyPlainValue("Report", NewReport_ID, "Reporter Address", String.Empty, NewReporterAddress)
-                EntryString += HistoryEnrtyPlainValue("Report", NewReport_ID, "Reporter Phone", String.Empty, NewReporterPhone)
-                EntryString += HistoryEnrtyPlainValue("Report", NewReport_ID, "Reporter Fax", String.Empty, NewReporterFax)
-                EntryString += HistoryEnrtyPlainValue("Report", NewReport_ID, "Reporter Email", String.Empty, NewReporterEmail)
-                EntryString += HistoryEntryReferencedValue("Report", NewReport_ID, "Expedited Reporting Required Status", tables.ExpeditedReportingRequired, fields.Name, Nothing, NewReportExpeditedReportingRequired_ID)
-                EntryString += HistoryEntryReferencedValue("Report", NewReport_ID, "Expedited Reporting Done Status", tables.ExpeditedReportingDone, fields.Name, Nothing, NewReportExpeditedReportingDone_ID)
-                EntryString += HistoryEnrtyPlainValue("Report", NewReport_ID, "Expedited Reporting Date", Date.MinValue, NewReportExpeditedReportingDate)
-                EntryString += HistoryDatabasebUpdateOutro
-                Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories(ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, @Entry)", Connection)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-                InsertHistoryEntryCommand.Parameters.Add("@Entry", SqlDbType.NVarChar, -1)
-                InsertHistoryEntryCommand.Parameters("@Entry").Value = EntryString
-                Try
-                    Connection.Open()
-                    InsertHistoryEntryCommand.ExecuteNonQuery()
-                Catch ex As Exception
-                    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                    Exit Sub
-                Finally
-                    Connection.Close()
-                End Try
+                'Dim EntryString As String = String.Empty
+                'EntryString = HistoryDatabasebUpdateIntro
+                'EntryString += NewReportIntro("Report", NewReport_ID)
+                'EntryString += HistoryEntryReferencedValue("Report", NewReport_ID, "Type", tables.ReportTypes, fields.Name, Nothing, NewReportType_ID)
+                'EntryString += HistoryEntryReferencedValue("Report", NewReport_ID, "Status", tables.ReportStatuses, fields.Name, Nothing, NewReportStatus_ID)
+                'EntryString += HistoryEntryPlainValue("Report", NewReport_ID, "Received Date", Date.MinValue, NewReport_Received)
+                'EntryString += HistoryEntryPlainValue("Report", NewReport_ID, "Due Date", Date.MinValue, NewReport_Due)
+                'EntryString += HistoryEntryReferencedValue("Report", NewReport_ID, "Complexity", tables.ReportComplexities, fields.Name, Nothing, NewReportComplexity_ID)
+                'EntryString += HistoryEntryReferencedValue("Report", NewReport_ID, "Source", tables.ReportSources, fields.Name, Nothing, NewReportSource_ID)
+                'EntryString += HistoryEntryPlainValue("Report", NewReport_ID, "Reporter Name", String.Empty, NewReporterName)
+                'EntryString += HistoryEntryPlainValue("Report", NewReport_ID, "Reporter Address", String.Empty, NewReporterAddress)
+                'EntryString += HistoryEntryPlainValue("Report", NewReport_ID, "Reporter Phone", String.Empty, NewReporterPhone)
+                'EntryString += HistoryEntryPlainValue("Report", NewReport_ID, "Reporter Fax", String.Empty, NewReporterFax)
+                'EntryString += HistoryEntryPlainValue("Report", NewReport_ID, "Reporter Email", String.Empty, NewReporterEmail)
+                'EntryString += HistoryEntryReferencedValue("Report", NewReport_ID, "Expedited Reporting Required Status", tables.ExpeditedReportingRequired, fields.Name, Nothing, NewReportExpeditedReportingRequired_ID)
+                'EntryString += HistoryEntryReferencedValue("Report", NewReport_ID, "Expedited Reporting Done Status", tables.ExpeditedReportingDone, fields.Name, Nothing, NewReportExpeditedReportingDone_ID)
+                'EntryString += HistoryEntryPlainValue("Report", NewReport_ID, "Expedited Reporting Date", Date.MinValue, NewReportExpeditedReportingDate)
+                'EntryString += HistoryDatabasebUpdateOutro
+                'Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories(ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, @Entry)", Connection)
+                'InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
+                'InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+                'InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+                'InsertHistoryEntryCommand.Parameters.Add("@Entry", SqlDbType.NVarChar, -1)
+                'InsertHistoryEntryCommand.Parameters("@Entry").Value = EntryString
+                'Try
+                '    Connection.Open()
+                '    InsertHistoryEntryCommand.ExecuteNonQuery()
+                'Catch ex As Exception
+                '    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+                '    Exit Sub
+                'Finally
+                '    Connection.Close()
+                'End Try
                 'Format Page Controls
                 AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, Nothing, Cancel_Button, ReturnToICSROverview_Button)
                 PopulateReporterFromLastReport_Button.Visible = False
@@ -835,44 +835,44 @@ Partial Class Application_EditReport
                     Connection.Close()
                 End Try
                 'Check for discrepancies between database contents as present when edit page was loaded and database contents as present when save button is clicked
-                Dim DiscrepancyString As String = String.Empty
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReportType_ID, AtSaveButtonClick_ReportType_ID, "Report Type")
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReportStatus_ID, AtSaveButtonClick_ReportStatus_ID, "Report Status")
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReportReceived, AtSaveButtonClick_ReportReceived, "Report Received")
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReportDue, AtSaveButtonClick_ReportDue, "Report Due")
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReportComplexity_ID, AtSaveButtonClick_ReportComplexity_ID, "Report Complexity")
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReportSource_ID, AtSaveButtonClick_ReportSource_ID, "Report Source")
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReporterName, AtSaveButtonClick_ReporterName, "Reporter Name")
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReporterAddress, AtSaveButtonClick_ReporterAddress, "Reporter Address")
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReporterPhone, AtSaveButtonClick_ReporterPhone, "Reporter Phone")
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReporterFax, AtSaveButtonClick_ReporterFax, "Reporter Fax")
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReporterEmail, AtSaveButtonClick_ReporterEmail, "Reporter Email")
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ExpeditedReportingRequired_ID, AtSaveButtonClick_ExpeditedReportingRequired_ID, "Expedited Reporting Required")
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ExpeditedReportingDone_ID, AtSaveButtonClick_ExpeditedReportingDone_ID, "Expedited Reporting Done")
-                DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ExpeditedReportingDate, AtSaveButtonClick_ExpeditedReportingDate, "Expedite Reporting Date")
+                'Dim DiscrepancyString As String = String.Empty
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReportType_ID, AtSaveButtonClick_ReportType_ID, "Report Type")
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReportStatus_ID, AtSaveButtonClick_ReportStatus_ID, "Report Status")
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReportReceived, AtSaveButtonClick_ReportReceived, "Report Received")
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReportDue, AtSaveButtonClick_ReportDue, "Report Due")
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReportComplexity_ID, AtSaveButtonClick_ReportComplexity_ID, "Report Complexity")
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReportSource_ID, AtSaveButtonClick_ReportSource_ID, "Report Source")
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReporterName, AtSaveButtonClick_ReporterName, "Reporter Name")
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReporterAddress, AtSaveButtonClick_ReporterAddress, "Reporter Address")
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReporterPhone, AtSaveButtonClick_ReporterPhone, "Reporter Phone")
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReporterFax, AtSaveButtonClick_ReporterFax, "Reporter Fax")
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ReporterEmail, AtSaveButtonClick_ReporterEmail, "Reporter Email")
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ExpeditedReportingRequired_ID, AtSaveButtonClick_ExpeditedReportingRequired_ID, "Expedited Reporting Required")
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ExpeditedReportingDone_ID, AtSaveButtonClick_ExpeditedReportingDone_ID, "Expedited Reporting Done")
+                'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ExpeditedReportingDate, AtSaveButtonClick_ExpeditedReportingDate, "Expedite Reporting Date")
                 'If Discprepancies between database contents as present when edit page was loaded and database contents as present when save button is clicked are found, show warning and abort update
-                If DiscrepancyString <> String.Empty Then
-                    AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToICSROverview_Button)
-                    Status_Label.Style.Add("text-align", "left")
-                    Status_Label.Style.Add("height", "auto")
-                    Status_Label.Text = DiscrepancyStringIntro & DiscrepancyString & DiscrepancyStringOutro
-                    Status_Label.CssClass = "form-control alert-danger"
-                    DropDownListDisabled(ReportType_DropDownList)
-                    DropDownListDisabled(ReportStatus_DropDownList)
-                    TextBoxReadOnly(ReportReceived_TextBox)
-                    TextBoxReadOnly(ReportDue_TextBox)
-                    DropDownListDisabled(ReportComplexity_DropDownList)
-                    DropDownListDisabled(ReportSource_DropDownList)
-                    TextBoxReadOnly(ReporterName_Textbox)
-                    TextBoxReadOnly(ReporterAddress_Textbox)
-                    TextBoxReadOnly(ReporterPhone_Textbox)
-                    TextBoxReadOnly(ReporterFax_Textbox)
-                    TextBoxReadOnly(ReporterEmail_Textbox)
-                    DropDownListDisabled(ExpeditedReportingRequired_DropDownList)
-                    DropDownListDisabled(ExpeditedReportingDone_DropDownList)
-                    TextBoxReadOnly(ExpeditedReportingDate_Textbox)
-                    Exit Sub
-                End If
+                'If DiscrepancyString <> String.Empty Then
+                '    AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToICSROverview_Button)
+                '    Status_Label.Style.Add("text-align", "left")
+                '    Status_Label.Style.Add("height", "auto")
+                '    Status_Label.Text = DiscrepancyStringIntro & DiscrepancyString & DiscrepancyStringOutro
+                '    Status_Label.CssClass = "form-control alert-danger"
+                '    DropDownListDisabled(ReportType_DropDownList)
+                '    DropDownListDisabled(ReportStatus_DropDownList)
+                '    TextBoxReadOnly(ReportReceived_TextBox)
+                '    TextBoxReadOnly(ReportDue_TextBox)
+                '    DropDownListDisabled(ReportComplexity_DropDownList)
+                '    DropDownListDisabled(ReportSource_DropDownList)
+                '    TextBoxReadOnly(ReporterName_Textbox)
+                '    TextBoxReadOnly(ReporterAddress_Textbox)
+                '    TextBoxReadOnly(ReporterPhone_Textbox)
+                '    TextBoxReadOnly(ReporterFax_Textbox)
+                '    TextBoxReadOnly(ReporterEmail_Textbox)
+                '    DropDownListDisabled(ExpeditedReportingRequired_DropDownList)
+                '    DropDownListDisabled(ExpeditedReportingDone_DropDownList)
+                '    TextBoxReadOnly(ExpeditedReportingDate_Textbox)
+                '    Exit Sub
+                'End If
                 'If no discrepancies were found between database contents as present when edit page was loaded and database contents as present when save button is clicked, write updates to database
                 Dim UpdateCommand As New SqlCommand
                 UpdateCommand.Connection = Connection
@@ -951,71 +951,71 @@ Partial Class Application_EditReport
                     End Try
                 End If
                 'Compare old and new variables to generate EntryString for Case History Entry
-                Dim EntryString As String = String.Empty
-                EntryString = HistoryDatabasebUpdateIntro
-                If sender Is ConfirmDeletion_Button Then
-                    EntryString += DeleteReportIntro("Report", CurrentReport_ID)
-                End If
-                If Updated_ReportType_ID <> AtSaveButtonClick_ReportType_ID Then
-                    EntryString += HistoryEntryReferencedValue("Report", CurrentReport_ID, "Type", tables.ReportTypes, fields.Name, AtSaveButtonClick_ReportType_ID, Updated_ReportType_ID)
-                End If
-                If Updated_ReportStatus_ID <> AtSaveButtonClick_ReportStatus_ID Then
-                    EntryString += HistoryEntryReferencedValue("Report", CurrentReport_ID, "Status", tables.ReportStatuses, fields.Name, AtSaveButtonClick_ReportStatus_ID, Updated_ReportStatus_ID)
-                End If
-                If Updated_ReportReceived <> AtSaveButtonClick_ReportReceived Then
-                    EntryString += HistoryEnrtyPlainValue("Report", CurrentReport_ID, "Received Date", AtSaveButtonClick_ReportReceived, Updated_ReportReceived)
-                End If
-                If Updated_ReportDue <> AtSaveButtonClick_ReportDue Then
-                    EntryString += HistoryEnrtyPlainValue("Report", CurrentReport_ID, "Due Date", AtSaveButtonClick_ReportDue, Updated_ReportDue)
-                End If
-                If Updated_ReportComplexity_ID <> AtSaveButtonClick_ReportComplexity_ID Then
-                    EntryString += HistoryEntryReferencedValue("Report", CurrentReport_ID, "Complexity", tables.ReportComplexities, fields.Name, AtSaveButtonClick_ReportComplexity_ID, Updated_ReportComplexity_ID)
-                End If
-                If Updated_ReportSource_ID <> AtSaveButtonClick_ReportSource_ID Then
-                    EntryString += HistoryEntryReferencedValue("Report", CurrentReport_ID, "Source", tables.ReportSources, fields.Name, AtSaveButtonClick_ReportSource_ID, Updated_ReportSource_ID)
-                End If
-                If Updated_ReporterName <> AtSaveButtonClick_ReporterName Then
-                    EntryString += HistoryEnrtyPlainValue("Report", CurrentReport_ID, "Reporter Name", AtSaveButtonClick_ReporterName, Updated_ReporterName)
-                End If
-                If Updated_ReporterAddress <> AtSaveButtonClick_ReporterAddress Then
-                    EntryString += HistoryEnrtyPlainValue("Report", CurrentReport_ID, "Reporter Address", AtSaveButtonClick_ReporterAddress, Updated_ReporterAddress)
-                End If
-                If Updated_ReporterPhone <> AtSaveButtonClick_ReporterPhone Then
-                    EntryString += HistoryEnrtyPlainValue("Report", CurrentReport_ID, "Reporter Phone", AtSaveButtonClick_ReporterPhone, Updated_ReporterPhone)
-                End If
-                If Updated_ReporterFax <> AtSaveButtonClick_ReporterFax Then
-                    EntryString += HistoryEnrtyPlainValue("Report", CurrentReport_ID, "Reporter Fax", AtSaveButtonClick_ReporterFax, Updated_ReporterFax)
-                End If
-                If Updated_ReporterEmail <> AtSaveButtonClick_ReporterEmail Then
-                    EntryString += HistoryEnrtyPlainValue("Report", CurrentReport_ID, "Reporter Email", AtSaveButtonClick_ReporterEmail, Updated_ReporterEmail)
-                End If
-                If Updated_ExpeditedReportingRequired_ID <> AtSaveButtonClick_ExpeditedReportingRequired_ID Then
-                    EntryString += HistoryEntryReferencedValue("Report", CurrentReport_ID, "Expedited Reporting Required", tables.ExpeditedReportingRequired, fields.Name, AtSaveButtonClick_ExpeditedReportingRequired_ID, Updated_ExpeditedReportingRequired_ID)
-                End If
-                If Updated_ExpeditedReportingDone_ID <> AtSaveButtonClick_ExpeditedReportingDone_ID Then
-                    EntryString += HistoryEntryReferencedValue("Report", CurrentReport_ID, "Expedited Reporting Done", tables.ExpeditedReportingDone, fields.Name, AtSaveButtonClick_ExpeditedReportingDone_ID, Updated_ExpeditedReportingDone_ID)
-                End If
-                If Updated_ExpeditedReportingDate <> AtSaveButtonClick_ExpeditedReportingDate Then
-                    EntryString += HistoryEnrtyPlainValue("Report", CurrentReport_ID, "Expedited Reporting Date", AtSaveButtonClick_ExpeditedReportingDate, Updated_ExpeditedReportingDate)
-                End If
-                EntryString += HistoryDatabasebUpdateOutro
-                'Generate History Entry if any data was changed in the database
-                If EntryString <> HistoryDatabasebUpdateIntro & HistoryDatabasebUpdateOutro Then
-                    Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories (ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, CASE WHEN @Entry = '' THEN NULL ELSE @Entry END)", Connection)
-                    InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
-                    InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-                    InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-                    InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-                    Try
-                        Connection.Open()
-                        InsertHistoryEntryCommand.ExecuteNonQuery()
-                    Catch ex As Exception
-                        Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                        Exit Sub
-                    Finally
-                        Connection.Close()
-                    End Try
-                End If
+                'Dim EntryString As String = String.Empty
+                'EntryString = HistoryDatabasebUpdateIntro
+                'If sender Is ConfirmDeletion_Button Then
+                '    EntryString += DeleteReportIntro("Report", CurrentReport_ID)
+                'End If
+                'If Updated_ReportType_ID <> AtSaveButtonClick_ReportType_ID Then
+                '    EntryString += HistoryEntryReferencedValue("Report", CurrentReport_ID, "Type", tables.ReportTypes, fields.Name, AtSaveButtonClick_ReportType_ID, Updated_ReportType_ID)
+                'End If
+                'If Updated_ReportStatus_ID <> AtSaveButtonClick_ReportStatus_ID Then
+                '    EntryString += HistoryEntryReferencedValue("Report", CurrentReport_ID, "Status", tables.ReportStatuses, fields.Name, AtSaveButtonClick_ReportStatus_ID, Updated_ReportStatus_ID)
+                'End If
+                'If Updated_ReportReceived <> AtSaveButtonClick_ReportReceived Then
+                '    EntryString += HistoryEntryPlainValue("Report", CurrentReport_ID, "Received Date", AtSaveButtonClick_ReportReceived, Updated_ReportReceived)
+                'End If
+                'If Updated_ReportDue <> AtSaveButtonClick_ReportDue Then
+                '    EntryString += HistoryEntryPlainValue("Report", CurrentReport_ID, "Due Date", AtSaveButtonClick_ReportDue, Updated_ReportDue)
+                'End If
+                'If Updated_ReportComplexity_ID <> AtSaveButtonClick_ReportComplexity_ID Then
+                '    EntryString += HistoryEntryReferencedValue("Report", CurrentReport_ID, "Complexity", tables.ReportComplexities, fields.Name, AtSaveButtonClick_ReportComplexity_ID, Updated_ReportComplexity_ID)
+                'End If
+                'If Updated_ReportSource_ID <> AtSaveButtonClick_ReportSource_ID Then
+                '    EntryString += HistoryEntryReferencedValue("Report", CurrentReport_ID, "Source", tables.ReportSources, fields.Name, AtSaveButtonClick_ReportSource_ID, Updated_ReportSource_ID)
+                'End If
+                'If Updated_ReporterName <> AtSaveButtonClick_ReporterName Then
+                '    EntryString += HistoryEntryPlainValue("Report", CurrentReport_ID, "Reporter Name", AtSaveButtonClick_ReporterName, Updated_ReporterName)
+                'End If
+                'If Updated_ReporterAddress <> AtSaveButtonClick_ReporterAddress Then
+                '    EntryString += HistoryEntryPlainValue("Report", CurrentReport_ID, "Reporter Address", AtSaveButtonClick_ReporterAddress, Updated_ReporterAddress)
+                'End If
+                'If Updated_ReporterPhone <> AtSaveButtonClick_ReporterPhone Then
+                '    EntryString += HistoryEntryPlainValue("Report", CurrentReport_ID, "Reporter Phone", AtSaveButtonClick_ReporterPhone, Updated_ReporterPhone)
+                'End If
+                'If Updated_ReporterFax <> AtSaveButtonClick_ReporterFax Then
+                '    EntryString += HistoryEntryPlainValue("Report", CurrentReport_ID, "Reporter Fax", AtSaveButtonClick_ReporterFax, Updated_ReporterFax)
+                'End If
+                'If Updated_ReporterEmail <> AtSaveButtonClick_ReporterEmail Then
+                '    EntryString += HistoryEntryPlainValue("Report", CurrentReport_ID, "Reporter Email", AtSaveButtonClick_ReporterEmail, Updated_ReporterEmail)
+                'End If
+                'If Updated_ExpeditedReportingRequired_ID <> AtSaveButtonClick_ExpeditedReportingRequired_ID Then
+                '    EntryString += HistoryEntryReferencedValue("Report", CurrentReport_ID, "Expedited Reporting Required", tables.ExpeditedReportingRequired, fields.Name, AtSaveButtonClick_ExpeditedReportingRequired_ID, Updated_ExpeditedReportingRequired_ID)
+                'End If
+                'If Updated_ExpeditedReportingDone_ID <> AtSaveButtonClick_ExpeditedReportingDone_ID Then
+                '    EntryString += HistoryEntryReferencedValue("Report", CurrentReport_ID, "Expedited Reporting Done", tables.ExpeditedReportingDone, fields.Name, AtSaveButtonClick_ExpeditedReportingDone_ID, Updated_ExpeditedReportingDone_ID)
+                'End If
+                'If Updated_ExpeditedReportingDate <> AtSaveButtonClick_ExpeditedReportingDate Then
+                '    EntryString += HistoryEntryPlainValue("Report", CurrentReport_ID, "Expedited Reporting Date", AtSaveButtonClick_ExpeditedReportingDate, Updated_ExpeditedReportingDate)
+                'End If
+                'EntryString += HistoryDatabasebUpdateOutro
+                ''Generate History Entry if any data was changed in the database
+                'If EntryString <> HistoryDatabasebUpdateIntro & HistoryDatabasebUpdateOutro Then
+                '    Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories (ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, CASE WHEN @Entry = '' THEN NULL ELSE @Entry END)", Connection)
+                '    InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
+                '    InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+                '    InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+                '    InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
+                '    Try
+                '        Connection.Open()
+                '        InsertHistoryEntryCommand.ExecuteNonQuery()
+                '    Catch ex As Exception
+                '        Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+                '        Exit Sub
+                '    Finally
+                '        Connection.Close()
+                '    End Try
+                'End If
                 'Format Controls
                 AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToICSROverview_Button)
                 If sender Is SaveUpdates_Button Then

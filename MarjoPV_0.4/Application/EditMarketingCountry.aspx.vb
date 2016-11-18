@@ -153,18 +153,18 @@ Partial Class Application_EditMarketingCountry
                 Connection.Close()
             End Try
             'Check for discrepancies between database contents as present when edit page was loaded and database contents as present when save button is clicked
-            Dim DiscrepancyString As String = String.Empty
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Country_ID, AtSaveButtonClick_Country_ID, "Country")
+            'Dim DiscrepancyString As String = String.Empty
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Country_ID, AtSaveButtonClick_Country_ID, "Country")
             'If Discprepancies between database contents as present when edit page was loaded and database contents as present when save button is clicked are found, show warning and abort update
-            If DiscrepancyString <> String.Empty Then
-                AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToMedicationOverview_Button)
-                Status_Label.Style.Add("text-align", "left")
-                Status_Label.Style.Add("height", "auto")
-                Status_Label.Text = DiscrepancyStringIntro & DiscrepancyString & DiscrepancyStringOutro
-                Status_Label.CssClass = "form-control alert-danger"
-                DropDownListDisabled(Countries_DropDownList)
-                Exit Sub
-            End If
+            'If DiscrepancyString <> String.Empty Then
+            '    AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToMedicationOverview_Button)
+            '    Status_Label.Style.Add("text-align", "left")
+            '    Status_Label.Style.Add("height", "auto")
+            '    Status_Label.Text = DiscrepancyStringIntro & DiscrepancyString & DiscrepancyStringOutro
+            '    Status_Label.CssClass = "form-control alert-danger"
+            '    DropDownListDisabled(Countries_DropDownList)
+            '    Exit Sub
+            'End If
             'If no discrepancies were found between database contents as present when edit page was loaded and database contents as present when save button is clicked, write updates to database
             Dim UpdateCommand As New SqlCommand
             UpdateCommand.Connection = Connection
@@ -204,30 +204,30 @@ Partial Class Application_EditMarketingCountry
                 End Try
             End If
             'Compare old and new variables to generate EntryString for Change History Entry
-            Dim EntryString As String = String.Empty
-            EntryString = HistoryDatabasebUpdateIntro
-            If sender Is ConfirmDeletion_Button Then
-                EntryString += DeleteReportIntro("Marketing Country", CurrentMedicationInCountry_ID)
-            End If
-            EntryString += HistoryEntryReferencedValue("Marketing Country", CurrentMedicationInCountry_ID, "", tables.Countries, fields.Name, AtSaveButtonClick_Country_ID, Updated_Country_ID)
-            EntryString += HistoryDatabasebUpdateOutro
-            'Generate History Entry if any data was changed in the database
-            If EntryString <> HistoryDatabasebUpdateIntro & HistoryDatabasebUpdateOutro Then
-                Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO MedicationHistories (Medication_ID, User_ID, Timepoint, Entry) VALUES (@Medication_ID, @User_ID, @Timepoint, CASE WHEN @Entry = '' THEN NULL ELSE @Entry END)", Connection)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@Medication_ID", CurrentMedication_ID)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-                Try
-                    Connection.Open()
-                    InsertHistoryEntryCommand.ExecuteNonQuery()
-                Catch ex As Exception
-                    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                    Exit Sub
-                Finally
-                    Connection.Close()
-                End Try
-            End If
+            'Dim EntryString As String = String.Empty
+            'EntryString = HistoryDatabasebUpdateIntro
+            'If sender Is ConfirmDeletion_Button Then
+            '    EntryString += DeleteReportIntro("Marketing Country", CurrentMedicationInCountry_ID)
+            'End If
+            'EntryString += HistoryEntryReferencedValue("Marketing Country", CurrentMedicationInCountry_ID, "", tables.Countries, fields.Name, AtSaveButtonClick_Country_ID, Updated_Country_ID)
+            'EntryString += HistoryDatabasebUpdateOutro
+            ''Generate History Entry if any data was changed in the database
+            'If EntryString <> HistoryDatabasebUpdateIntro & HistoryDatabasebUpdateOutro Then
+            '    Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO MedicationHistories (Medication_ID, User_ID, Timepoint, Entry) VALUES (@Medication_ID, @User_ID, @Timepoint, CASE WHEN @Entry = '' THEN NULL ELSE @Entry END)", Connection)
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@Medication_ID", CurrentMedication_ID)
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
+            '    Try
+            '        Connection.Open()
+            '        InsertHistoryEntryCommand.ExecuteNonQuery()
+            '    Catch ex As Exception
+            '        Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+            '        Exit Sub
+            '    Finally
+            '        Connection.Close()
+            '    End Try
+            'End If
             'Format Controls
             AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToMedicationOverview_Button)
             If sender Is SaveUpdates_Button Then

@@ -324,39 +324,39 @@ Partial Class Application_EditICSRBasicInformation
                 Exit Sub
             End Try
             'Check for discrepancies between database contents as present when edit page was loaded and database contents as present when save button is clicked
-            Dim DiscrepancyString As String = String.Empty
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ICSRStatusID, AtSaveButtonClick_ICSRStatus_ID, "ICSR Status")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Assignee_ID, AtSaveButtonClick_Assignee_ID, "Assignee")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_PatientInitials, AtSaveButtonClick_PatientInitials, "Patient Initials")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_PatientYearOfBirth_ID, AtSaveButtonClick_PatientYearOfBirth_ID, "Patient Year Of Birth")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_PatientGender_ID, AtSaveButtonClick_PatientGender_ID, "Patient Gender")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_IsSerious_ID, AtSaveButtonClick_IsSerious_ID, "Is Serious Status")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_SeriousnessCriterion_ID, AtSaveButtonClick_SeriousnessCriterion_ID, "Seriousness Criterion")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Narrative, AtSaveButtonClick_Narrative, "Narrative")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_CompanyComment, AtSaveButtonClick_CompanyComment, "Company Comment")
+            'Dim DiscrepancyString As String = String.Empty
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_ICSRStatusID, AtSaveButtonClick_ICSRStatus_ID, "ICSR Status")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Assignee_ID, AtSaveButtonClick_Assignee_ID, "Assignee")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_PatientInitials, AtSaveButtonClick_PatientInitials, "Patient Initials")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_PatientYearOfBirth_ID, AtSaveButtonClick_PatientYearOfBirth_ID, "Patient Year Of Birth")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_PatientGender_ID, AtSaveButtonClick_PatientGender_ID, "Patient Gender")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_IsSerious_ID, AtSaveButtonClick_IsSerious_ID, "Is Serious Status")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_SeriousnessCriterion_ID, AtSaveButtonClick_SeriousnessCriterion_ID, "Seriousness Criterion")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Narrative, AtSaveButtonClick_Narrative, "Narrative")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_CompanyComment, AtSaveButtonClick_CompanyComment, "Company Comment")
             'If Discprepancies between database contents as present when edit page was loaded and database contents as present when save button is clicked are found, show warning and abort update
-            If DiscrepancyString <> String.Empty Then
-                AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, Nothing, Cancel_Button, ReturnToICSROverview_Button)
-                Status_Label.Style.Add("text-align", "left")
-                Status_Label.Style.Add("height", "auto")
-                Status_Label.Text = DiscrepancyStringIntro & DiscrepancyString & DiscrepancyStringOutro
-                Status_Label.CssClass = "form-control alert-danger"
-                If LoggedIn_User_CanViewCompanies = True Then
-                    Company_Row.Visible = True
-                End If
-                TextBoxReadOnly(CompanyName_Textbox)
-                DropDownListDisabled(ICSRStatuses_DropDownList)
-                DropDownListDisabled(Assignees_DropDownList)
-                TextBoxReadOnly(PatientInitials_TextBox)
-                DropDownListDisabled(PatientYearOfBirth_DropDownList)
-                DropDownListDisabled(PatientYearOfBirth_DropDownList)
-                DropDownListDisabled(PatientGender_DropDownList)
-                DropDownListDisabled(IsSerious_DropDownList)
-                DropDownListDisabled(SeriousnessCriteria_DropDownList)
-                TextBoxReadOnly(Narrative_Textbox)
-                TextBoxReadOnly(CompanyComment_Textbox)
-                Exit Sub
-            End If
+            'If DiscrepancyString <> String.Empty Then
+            '    AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, Nothing, Cancel_Button, ReturnToICSROverview_Button)
+            '    Status_Label.Style.Add("text-align", "left")
+            '    Status_Label.Style.Add("height", "auto")
+            '    Status_Label.Text = DiscrepancyStringIntro & DiscrepancyString & DiscrepancyStringOutro
+            '    Status_Label.CssClass = "form-control alert-danger"
+            '    If LoggedIn_User_CanViewCompanies = True Then
+            '        Company_Row.Visible = True
+            '    End If
+            '    TextBoxReadOnly(CompanyName_Textbox)
+            '    DropDownListDisabled(ICSRStatuses_DropDownList)
+            '    DropDownListDisabled(Assignees_DropDownList)
+            '    TextBoxReadOnly(PatientInitials_TextBox)
+            '    DropDownListDisabled(PatientYearOfBirth_DropDownList)
+            '    DropDownListDisabled(PatientYearOfBirth_DropDownList)
+            '    DropDownListDisabled(PatientGender_DropDownList)
+            '    DropDownListDisabled(IsSerious_DropDownList)
+            '    DropDownListDisabled(SeriousnessCriteria_DropDownList)
+            '    TextBoxReadOnly(Narrative_Textbox)
+            '    TextBoxReadOnly(CompanyComment_Textbox)
+            '    Exit Sub
+            'End If
             'If no discrepancies were found between database contents as present when edit page was loaded and database contents as present when save button is clicked, write ICSR Updates to database
             Dim UpdateCommand As New SqlCommand("UPDATE ICSRs SET Assignee_ID = (CASE WHEN @Assignee_ID = 0 THEN NULL ELSE @Assignee_ID END), ICSRStatus_ID = (CASE WHEN @ICSRStatus_ID = 0 THEN NULL ELSE @ICSRStatus_ID END), Patient_Initials = (CASE WHEN @Patient_Initials = '' THEN NULL ELSE @Patient_Initials END), Patient_YearOfBirth_ID = (CASE WHEN @Patient_YearOfBirth_ID = 0 THEN NULL ELSE @Patient_YearOfBirth_ID END), Patient_Gender_ID = (CASE WHEN @Patient_Gender_ID = 0 THEN NULL ELSE @Patient_Gender_ID END), IsSerious_ID = (CASE WHEN @IsSerious_ID = 0 THEN NULL ELSE @IsSerious_ID END), SeriousnessCriterion_ID = (CASE WHEN @SeriousnessCriterion_ID = 0 THEN NULL ELSE @SeriousnessCriterion_ID END), Narrative = (CASE WHEN @Narrative = '' THEN NULL ELSE @Narrative END), CompanyComment = (CASE WHEN @CompanyComment = '' THEN NULL ELSE @CompanyComment end) WHERE ID = @CurrentICSR_ID", Connection)
             UpdateCommand.Parameters.AddWithValue("@ICSRStatus_ID", ICSRStatuses_DropDownList.SelectedValue)
@@ -411,53 +411,53 @@ Partial Class Application_EditICSRBasicInformation
                 Connection.Close()
             End Try
             'Compare old and new variables to generate EntryString for Case History Entry
-            Dim EntryString As String = String.Empty
-            EntryString = HistoryDatabasebUpdateIntro
-            If Updated_ICSRStatus_ID <> AtSaveButtonClick_ICSRStatus_ID Then
-                EntryString += HistoryEntryReferencedValue("ICSR", CurrentICSR_ID, "Status", tables.ICSRStatuses, fields.Name, AtSaveButtonClick_ICSRStatus_ID, Updated_ICSRStatus_ID)
-            End If
-            If Updated_Assignee_ID <> AtSaveButtonClick_Assignee_ID Then
-                EntryString += HistoryEntryReferencedValue("ICSR", CurrentICSR_ID, "Assignee", tables.Users, fields.Name, AtSaveButtonClick_Assignee_ID, Updated_Assignee_ID)
-            End If
-            If Updated_PatientInitials <> AtSaveButtonClick_PatientInitials Then
-                EntryString += HistoryEnrtyPlainValue("ICSR", CurrentICSR_ID, "Patient Initials", AtSaveButtonClick_PatientInitials, Updated_PatientInitials)
-            End If
-            If Updated_PatientYearOfBirth_ID <> AtSaveButtonClick_PatientYearOfBirth_ID Then
-                EntryString += HistoryEntryReferencedValue("ICSR", CurrentICSR_ID, "Patient Year of Birth", tables.YearsOfBirth, fields.Name, AtSaveButtonClick_PatientYearOfBirth_ID, Updated_PatientYearOfBirth_ID)
-            End If
-            If Updated_PatientGender_ID <> AtSaveButtonClick_PatientGender_ID Then
-                EntryString += HistoryEntryReferencedValue("ICSR", CurrentICSR_ID, "Patient Gender", tables.Genders, fields.Name, AtSaveButtonClick_PatientGender_ID, Updated_PatientGender_ID)
-            End If
-            If Updated_IsSerious_ID <> AtSaveButtonClick_IsSerious_ID Then
-                EntryString += HistoryEntryReferencedValue("ICSR", CurrentICSR_ID, "Is Serious", tables.IsSerious, fields.Name, AtSaveButtonClick_IsSerious_ID, Updated_IsSerious_ID)
-            End If
-            If Updated_SeriousnessCriterion_ID <> AtSaveButtonClick_SeriousnessCriterion_ID Then
-                EntryString += HistoryEntryReferencedValue("ICSR", CurrentICSR_ID, "Seriousness Criterion", tables.SeriousnessCriteria, fields.Name, AtSaveButtonClick_SeriousnessCriterion_ID, Updated_SeriousnessCriterion_ID)
-            End If
-            If Updated_Narrative <> AtSaveButtonClick_Narrative Then
-                EntryString += HistoryEnrtyPlainValue("ICSR", CurrentICSR_ID, "Narrative", AtSaveButtonClick_Narrative, Updated_Narrative)
-            End If
-            If Updated_CompanyComment <> AtSaveButtonClick_CompanyComment Then
-                EntryString += HistoryEnrtyPlainValue("ICSR", CurrentICSR_ID, "Company Comment", AtSaveButtonClick_CompanyComment, Updated_CompanyComment)
-            End If
-            EntryString += HistoryDatabasebUpdateOutro
-            'Generate History Entry if any data was changed in the database
-            If EntryString <> HistoryDatabasebUpdateIntro & HistoryDatabasebUpdateOutro Then
-                Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories (ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, CASE WHEN @Entry = '' THEN NULL ELSE @Entry END)", Connection)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-                Try
-                    Connection.Open()
-                    InsertHistoryEntryCommand.ExecuteNonQuery()
-                Catch ex As Exception
-                    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                    Exit Sub
-                Finally
-                    Connection.Close()
-                End Try
-            End If
+            'Dim EntryString As String = String.Empty
+            'EntryString = HistoryDatabasebUpdateIntro
+            'If Updated_ICSRStatus_ID <> AtSaveButtonClick_ICSRStatus_ID Then
+            '    EntryString += HistoryEntryReferencedValue("ICSR", CurrentICSR_ID, "Status", tables.ICSRStatuses, fields.Name, AtSaveButtonClick_ICSRStatus_ID, Updated_ICSRStatus_ID)
+            'End If
+            'If Updated_Assignee_ID <> AtSaveButtonClick_Assignee_ID Then
+            '    EntryString += HistoryEntryReferencedValue("ICSR", CurrentICSR_ID, "Assignee", tables.Users, fields.Name, AtSaveButtonClick_Assignee_ID, Updated_Assignee_ID)
+            'End If
+            'If Updated_PatientInitials <> AtSaveButtonClick_PatientInitials Then
+            '    EntryString += HistoryEntryPlainValue("ICSR", CurrentICSR_ID, "Patient Initials", AtSaveButtonClick_PatientInitials, Updated_PatientInitials)
+            'End If
+            'If Updated_PatientYearOfBirth_ID <> AtSaveButtonClick_PatientYearOfBirth_ID Then
+            '    EntryString += HistoryEntryReferencedValue("ICSR", CurrentICSR_ID, "Patient Year of Birth", tables.YearsOfBirth, fields.Name, AtSaveButtonClick_PatientYearOfBirth_ID, Updated_PatientYearOfBirth_ID)
+            'End If
+            'If Updated_PatientGender_ID <> AtSaveButtonClick_PatientGender_ID Then
+            '    EntryString += HistoryEntryReferencedValue("ICSR", CurrentICSR_ID, "Patient Gender", tables.Genders, fields.Name, AtSaveButtonClick_PatientGender_ID, Updated_PatientGender_ID)
+            'End If
+            'If Updated_IsSerious_ID <> AtSaveButtonClick_IsSerious_ID Then
+            '    EntryString += HistoryEntryReferencedValue("ICSR", CurrentICSR_ID, "Is Serious", tables.IsSerious, fields.Name, AtSaveButtonClick_IsSerious_ID, Updated_IsSerious_ID)
+            'End If
+            'If Updated_SeriousnessCriterion_ID <> AtSaveButtonClick_SeriousnessCriterion_ID Then
+            '    EntryString += HistoryEntryReferencedValue("ICSR", CurrentICSR_ID, "Seriousness Criterion", tables.SeriousnessCriteria, fields.Name, AtSaveButtonClick_SeriousnessCriterion_ID, Updated_SeriousnessCriterion_ID)
+            'End If
+            'If Updated_Narrative <> AtSaveButtonClick_Narrative Then
+            '    EntryString += HistoryEntryPlainValue("ICSR", CurrentICSR_ID, "Narrative", AtSaveButtonClick_Narrative, Updated_Narrative)
+            'End If
+            'If Updated_CompanyComment <> AtSaveButtonClick_CompanyComment Then
+            '    EntryString += HistoryEntryPlainValue("ICSR", CurrentICSR_ID, "Company Comment", AtSaveButtonClick_CompanyComment, Updated_CompanyComment)
+            'End If
+            'EntryString += HistoryDatabasebUpdateOutro
+            ''Generate History Entry if any data was changed in the database
+            'If EntryString <> HistoryDatabasebUpdateIntro & HistoryDatabasebUpdateOutro Then
+            '    Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories (ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, CASE WHEN @Entry = '' THEN NULL ELSE @Entry END)", Connection)
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
+            '    Try
+            '        Connection.Open()
+            '        InsertHistoryEntryCommand.ExecuteNonQuery()
+            '    Catch ex As Exception
+            '        Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+            '        Exit Sub
+            '    Finally
+            '        Connection.Close()
+            '    End Try
+            'End If
             'Format Controls
             If LoggedIn_User_CanViewCompanies = True Then
                 Company_Row.Visible = True

@@ -76,7 +76,7 @@ Partial Class Application_Medications
             Input_ID = Nothing
         End If
         Dim Input_Company_ID As Integer = TryCType(Companies_Filter_DropDownList_Medications.SelectedValue, InputTypes.Integer)
-        Dim Input_Name As String = TryCType(Name_Filter_TextBox.Text, InputTypes.Text)
+        Dim Input_Name As String = TryCType(Name_Filter_TextBox.Text, InputTypes.String)
         Dim Input_MedicationType_ID As Integer = TryCType(Medication_Types_Filter_DropDownList.SelectedValue, InputTypes.Integer)
         Dim Input_AdministrationRoute_ID As Integer = TryCType(AdministrationRoute_Filter_DropDownList.SelectedValue, InputTypes.Integer)
         Dim Input_ID_Component As String = String.Empty

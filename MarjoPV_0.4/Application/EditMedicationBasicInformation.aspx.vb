@@ -219,27 +219,27 @@ Partial Class Application_EditMedicationBasicInformation
                 Connection.Close()
             End Try
             'Check for discrepancies between database contents as present when edit page was loaded and database contents as present when save button is clicked
-            Dim DiscrepancyString As String = String.Empty
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Name, AtSaveButtonClick_Name, "Generic Name")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_MedicationType_ID, AtSaveButtonClick_MedicationType_ID, "Medication Type")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_AdministrationRoute_ID, AtSaveButtonClick_AdministrationRoute_ID, "Administration Route")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_DoseType_ID, AtSaveButtonClick_DoseType_ID, "Dose Type")
+            'Dim DiscrepancyString As String = String.Empty
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Name, AtSaveButtonClick_Name, "Generic Name")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_MedicationType_ID, AtSaveButtonClick_MedicationType_ID, "Medication Type")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_AdministrationRoute_ID, AtSaveButtonClick_AdministrationRoute_ID, "Administration Route")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_DoseType_ID, AtSaveButtonClick_DoseType_ID, "Dose Type")
             'If Discprepancies between database contents as present when edit page was loaded and database contents as present when save button is clicked are found, show warning and abort update
-            If DiscrepancyString <> String.Empty Then
-                AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, Nothing, Cancel_Button, ReturnToMedicationOverview_Button)
-                Status_Label.Style.Add("text-align", "left")
-                Status_Label.Style.Add("height", "auto")
-                Status_Label.Text = DiscrepancyStringIntro & DiscrepancyString & DiscrepancyStringOutro
-                Status_Label.CssClass = "form-control alert-danger"
-                If LoggedIn_User_CanViewCompanies = True Then
-                    Company_Row.Visible = True
-                End If
-                TextBoxReadOnly(Company_Textbox)
-                DropDownListDisabled(MedicationTypes_DropDownList)
-                DropDownListDisabled(AdministrationRoutes_DropDownList)
-                DropDownListDisabled(DoseTypes_DropDownList)
-                Exit Sub
-            End If
+            'If DiscrepancyString <> String.Empty Then
+            '    AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, Nothing, Cancel_Button, ReturnToMedicationOverview_Button)
+            '    Status_Label.Style.Add("text-align", "left")
+            '    Status_Label.Style.Add("height", "auto")
+            '    Status_Label.Text = DiscrepancyStringIntro & DiscrepancyString & DiscrepancyStringOutro
+            '    Status_Label.CssClass = "form-control alert-danger"
+            '    If LoggedIn_User_CanViewCompanies = True Then
+            '        Company_Row.Visible = True
+            '    End If
+            '    TextBoxReadOnly(Company_Textbox)
+            '    DropDownListDisabled(MedicationTypes_DropDownList)
+            '    DropDownListDisabled(AdministrationRoutes_DropDownList)
+            '    DropDownListDisabled(DoseTypes_DropDownList)
+            '    Exit Sub
+            'End If
             'If no discrepancies were found between database contents as present when edit page was loaded and database contents as present when save button is clicked, write updates to database
             Dim UpdateCommand As New SqlCommand("UPDATE Medications SET Name = (CASE WHEN @Name = '' THEN NULL ELSE @Name END), MedicationType_ID = (CASE WHEN @MedicationType_ID = 0 THEN NULL ELSE @MedicationType_ID END), AdministrationRoute_ID = (CASE WHEN @AdministrationRoute_ID = 0 THEN NULL ELSE @AdministrationRoute_ID END), DoseType_ID = (CASE WHEN @DoseType_ID = 0 THEN NULL ELSE @DoseType_ID END) WHERE ID = @CurrentMedication_ID", Connection)
             UpdateCommand.Parameters.AddWithValue("@Name", Name_Textbox.Text.Trim)
@@ -279,38 +279,38 @@ Partial Class Application_EditMedicationBasicInformation
                 Connection.Close()
             End Try
             'Compare old and new variables to generate EntryString for Change History Entry
-            Dim EntryString As String = String.Empty
-            EntryString = HistoryDatabasebUpdateIntro
-            If Updated_Name <> AtSaveButtonClick_Name Then
-                EntryString += HistoryEnrtyPlainValue("Medication", CurrentMedication_ID, "Generic Name", AtSaveButtonClick_Name, Updated_Name)
-            End If
-            If Updated_MedicationType_ID <> AtSaveButtonClick_MedicationType_ID Then
-                EntryString += HistoryEntryReferencedValue("Medication", CurrentMedication_ID, "Type", tables.MedicationTypes, fields.Name, AtSaveButtonClick_MedicationType_ID, Updated_MedicationType_ID)
-            End If
-            If Updated_AdministrationRoute_ID <> AtSaveButtonClick_AdministrationRoute_ID Then
-                EntryString += HistoryEntryReferencedValue("Medication", CurrentMedication_ID, "Administration Route", tables.AdministrationRoutes, fields.Name, AtSaveButtonClick_AdministrationRoute_ID, Updated_AdministrationRoute_ID)
-            End If
-            If Updated_DoseType_ID <> AtSaveButtonClick_DoseType_ID Then
-                EntryString += HistoryEntryReferencedValue("Medication", CurrentMedication_ID, "Dose Type", tables.DoseTypes, fields.Name, AtSaveButtonClick_DoseType_ID, Updated_DoseType_ID)
-            End If
-            EntryString += HistoryDatabasebUpdateOutro
-            'Generate History Entry if any data was changed in the database
-            If EntryString <> HistoryDatabasebUpdateIntro & HistoryDatabasebUpdateOutro Then
-                Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO MedicationHistories (Medication_ID, User_ID, Timepoint, Entry) VALUES (@CurrentMedication_ID, @User_ID, @Timepoint, CASE WHEN @Entry = '' THEN NULL ELSE @Entry END)", Connection)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@CurrentMedication_ID", CurrentMedication_ID)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-                Try
-                    Connection.Open()
-                    InsertHistoryEntryCommand.ExecuteNonQuery()
-                Catch ex As Exception
-                    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                    Exit Sub
-                Finally
-                    Connection.Close()
-                End Try
-            End If
+            'Dim EntryString As String = String.Empty
+            'EntryString = HistoryDatabasebUpdateIntro
+            'If Updated_Name <> AtSaveButtonClick_Name Then
+            '    EntryString += HistoryEntryPlainValue("Medication", CurrentMedication_ID, "Generic Name", AtSaveButtonClick_Name, Updated_Name)
+            'End If
+            'If Updated_MedicationType_ID <> AtSaveButtonClick_MedicationType_ID Then
+            '    EntryString += HistoryEntryReferencedValue("Medication", CurrentMedication_ID, "Type", tables.MedicationTypes, fields.Name, AtSaveButtonClick_MedicationType_ID, Updated_MedicationType_ID)
+            'End If
+            'If Updated_AdministrationRoute_ID <> AtSaveButtonClick_AdministrationRoute_ID Then
+            '    EntryString += HistoryEntryReferencedValue("Medication", CurrentMedication_ID, "Administration Route", tables.AdministrationRoutes, fields.Name, AtSaveButtonClick_AdministrationRoute_ID, Updated_AdministrationRoute_ID)
+            'End If
+            'If Updated_DoseType_ID <> AtSaveButtonClick_DoseType_ID Then
+            '    EntryString += HistoryEntryReferencedValue("Medication", CurrentMedication_ID, "Dose Type", tables.DoseTypes, fields.Name, AtSaveButtonClick_DoseType_ID, Updated_DoseType_ID)
+            'End If
+            'EntryString += HistoryDatabasebUpdateOutro
+            ''Generate History Entry if any data was changed in the database
+            'If EntryString <> HistoryDatabasebUpdateIntro & HistoryDatabasebUpdateOutro Then
+            '    Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO MedicationHistories (Medication_ID, User_ID, Timepoint, Entry) VALUES (@CurrentMedication_ID, @User_ID, @Timepoint, CASE WHEN @Entry = '' THEN NULL ELSE @Entry END)", Connection)
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@CurrentMedication_ID", CurrentMedication_ID)
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
+            '    Try
+            '        Connection.Open()
+            '        InsertHistoryEntryCommand.ExecuteNonQuery()
+            '    Catch ex As Exception
+            '        Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+            '        Exit Sub
+            '    Finally
+            '        Connection.Close()
+            '    End Try
+            'End If
             'Format Controls
             If LoggedIn_User_CanViewCompanies = True Then
                 Company_Row.Visible = True

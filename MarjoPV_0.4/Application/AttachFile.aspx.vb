@@ -158,27 +158,27 @@ Partial Class Application_AttachFile
             Finally
                 Connection.Close()
             End Try
-            Dim EntryString As String = String.Empty
-            EntryString = HistoryDatabasebUpdateIntro
-            EntryString += NewReportIntro("Attached File", NewAttachedFile_ID)
-            EntryString += HistoryEnrtyPlainValue("Attached File", NewAttachedFile_ID, "Name", String.Empty, NewAttachedFile_Name)
-            EntryString += HistoryEnrtyPlainValue("Attached File", NewAttachedFile_ID, "Date Added", Date.MinValue, NewAttachedFile_Added)
-            EntryString += HistoryDatabasebUpdateOutro
-            Dim InsertHistoryEntryCommandString As String = "INSERT INTO " & [Enum].GetName(GetType(tables), HistoryTable) & " (" & [Enum].GetName(GetType(fields), HistoryField) & ", User_ID, Timepoint, Entry) VALUES (@Association_ID, @User_ID, @Timepoint, @Entry)"
-            Dim InsertHistoryEntryCommand As New SqlCommand(InsertHistoryEntryCommandString, Connection)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Association_ID", Association_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-            Try
-                Connection.Open()
-                InsertHistoryEntryCommand.ExecuteNonQuery()
-            Catch ex As Exception
-                Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                Exit Sub
-            Finally
-                Connection.Close()
-            End Try
+            'Dim EntryString As String = String.Empty
+            'EntryString = HistoryDatabasebUpdateIntro
+            'EntryString += NewReportIntro("Attached File", NewAttachedFile_ID)
+            'EntryString += HistoryEntryPlainValue("Attached File", NewAttachedFile_ID, "Name", String.Empty, NewAttachedFile_Name)
+            'EntryString += HistoryEntryPlainValue("Attached File", NewAttachedFile_ID, "Date Added", Date.MinValue, NewAttachedFile_Added)
+            'EntryString += HistoryDatabasebUpdateOutro
+            'Dim InsertHistoryEntryCommandString As String = "INSERT INTO " & [Enum].GetName(GetType(tables), HistoryTable) & " (" & [Enum].GetName(GetType(fields), HistoryField) & ", User_ID, Timepoint, Entry) VALUES (@Association_ID, @User_ID, @Timepoint, @Entry)"
+            'Dim InsertHistoryEntryCommand As New SqlCommand(InsertHistoryEntryCommandString, Connection)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Association_ID", Association_ID)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
+            'Try
+            '    Connection.Open()
+            '    InsertHistoryEntryCommand.ExecuteNonQuery()
+            'Catch ex As Exception
+            '    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+            '    Exit Sub
+            'Finally
+            '    Connection.Close()
+            'End Try
             'Format Page Controls
             AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, Nothing, Cancel_Button, ReturnToOverview_Button)
             AttachedFileUpload.Enabled = False

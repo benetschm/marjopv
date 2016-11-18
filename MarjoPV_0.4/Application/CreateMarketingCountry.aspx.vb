@@ -117,25 +117,25 @@ Partial Class Application_CreateMarketingCountry
             Finally
                 Connection.Close()
             End Try
-            Dim EntryString As String = String.Empty
-            EntryString = HistoryDatabasebUpdateIntro
-            EntryString += NewReportIntro("Marketing Country", NewMedicationInCountry_ID)
-            EntryString += HistoryEntryReferencedValue("Marketing Country", NewMedicationInCountry_ID, "Name", tables.Countries, fields.Name, Nothing, NewCountry_ID)
-            EntryString += HistoryDatabasebUpdateOutro
-            Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO MedicationHistories(Medication_ID, User_ID, Timepoint, Entry) VALUES (@Medication_ID, @User_ID, @Timepoint, @Entry)", Connection)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Medication_ID", CurrentMedication_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-            Try
-                Connection.Open()
-                InsertHistoryEntryCommand.ExecuteNonQuery()
-            Catch ex As Exception
-                Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                Exit Sub
-            Finally
-                Connection.Close()
-            End Try
+            'Dim EntryString As String = String.Empty
+            'EntryString = HistoryDatabasebUpdateIntro
+            'EntryString += NewReportIntro("Marketing Country", NewMedicationInCountry_ID)
+            'EntryString += HistoryEntryReferencedValue("Marketing Country", NewMedicationInCountry_ID, "Name", tables.Countries, fields.Name, Nothing, NewCountry_ID)
+            'EntryString += HistoryDatabasebUpdateOutro
+            'Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO MedicationHistories(Medication_ID, User_ID, Timepoint, Entry) VALUES (@Medication_ID, @User_ID, @Timepoint, @Entry)", Connection)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Medication_ID", CurrentMedication_ID)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
+            'Try
+            '    Connection.Open()
+            '    InsertHistoryEntryCommand.ExecuteNonQuery()
+            'Catch ex As Exception
+            '    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+            '    Exit Sub
+            'Finally
+            '    Connection.Close()
+            'End Try
             'Format Page Controls
             AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, Nothing, Cancel_Button, ReturnToMedicationOverview_Button)
             DropDownListDisabled(Countries_DropDownList)

@@ -210,28 +210,28 @@ Partial Class Application_CreateMedication
             Finally
                 Connection.Close()
             End Try
-            Dim EntryString As String = String.Empty
-            EntryString = HistoryDatabasebUpdateIntro
-            EntryString += NewReportIntro("Medication", Medication_ID)
-            EntryString += HistoryEnrtyPlainValue("Medication", Medication_ID, "Generic Name", String.Empty, Name)
-            EntryString += HistoryEntryReferencedValue("Medication", Medication_ID, "Medication Type", tables.MedicationTypes, fields.Name, Nothing, MedicationType_ID)
-            EntryString += HistoryEntryReferencedValue("Medication", Medication_ID, "Administration Route", tables.AdministrationRoutes, fields.Name, Nothing, AdministrationRoute_ID)
-            EntryString += HistoryEntryReferencedValue("Medication", Medication_ID, "Dose Type", tables.DoseTypes, fields.Name, Nothing, DoseType_ID)
-            EntryString += HistoryDatabasebUpdateOutro
-            Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO MedicationHistories(Medication_ID, User_ID, Timepoint, Entry) VALUES (@Medication_ID, @User_ID, @Timepoint, @Entry)", Connection)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Medication_ID", Medication_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-            Try
-                Connection.Open()
-                InsertHistoryEntryCommand.ExecuteNonQuery()
-            Catch ex As Exception
-                Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                Exit Sub
-            Finally
-                Connection.Close()
-            End Try
+            'Dim EntryString As String = String.Empty
+            'EntryString = HistoryDatabasebUpdateIntro
+            'EntryString += NewReportIntro("Medication", Medication_ID)
+            'EntryString += HistoryEntryPlainValue("Medication", Medication_ID, "Generic Name", String.Empty, Name)
+            'EntryString += HistoryEntryReferencedValue("Medication", Medication_ID, "Medication Type", tables.MedicationTypes, fields.Name, Nothing, MedicationType_ID)
+            'EntryString += HistoryEntryReferencedValue("Medication", Medication_ID, "Administration Route", tables.AdministrationRoutes, fields.Name, Nothing, AdministrationRoute_ID)
+            'EntryString += HistoryEntryReferencedValue("Medication", Medication_ID, "Dose Type", tables.DoseTypes, fields.Name, Nothing, DoseType_ID)
+            'EntryString += HistoryDatabasebUpdateOutro
+            'Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO MedicationHistories(Medication_ID, User_ID, Timepoint, Entry) VALUES (@Medication_ID, @User_ID, @Timepoint, @Entry)", Connection)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Medication_ID", Medication_ID)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
+            'Try
+            '    Connection.Open()
+            '    InsertHistoryEntryCommand.ExecuteNonQuery()
+            'Catch ex As Exception
+            '    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+            '    Exit Sub
+            'Finally
+            '    Connection.Close()
+            'End Try
             'Format Page Controls
             SaveUpdates_Button.Visible = False
             ConfirmMedicationInput_Button.Visible = False

@@ -210,29 +210,29 @@ Partial Class Application_CreateRelation
             Finally
                 Connection.Close()
             End Try
-            Dim EntryString As String = String.Empty
-            EntryString = HistoryDatabasebUpdateIntro
-            EntryString += NewReportIntro("Relation", NewRelation_ID)
-            EntryString += HistoryEntryReferencedValue("Relation", NewRelation_ID, "Medication", tables.Medications, fields.Name, Nothing, ParentID(tables.Medications, tables.MedicationsPerICSR, fields.Medication_ID, NewMedicationPerICSR_ID))
-            EntryString += HistoryEntryReferencedValue("Relation", NewRelation_ID, "Event", tables.AEs, fields.MedDRATerm, Nothing, NewAE_ID)
-            EntryString += HistoryEntryReferencedValue("Relation", NewRelation_ID, "Relatedness as per Reporter", tables.RelatednessCriteriaReporter, fields.Name, Nothing, NewRelatednessCriterionReporter_ID)
-            EntryString += HistoryEntryReferencedValue("Relation", NewRelation_ID, "Relatedness as per Manufacturer", tables.RelatednessCriteriaManufacturer, fields.Name, Nothing, NewRelatednessCriterionManufacturer_ID)
-            EntryString += HistoryEntryReferencedValue("Relation", NewRelation_ID, "Expectedness", tables.ExpectednessCriteria, fields.Name, Nothing, NewExpectednessCriterion_ID)
-            EntryString += HistoryDatabasebUpdateOutro
-            Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories(ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, @Entry)", Connection)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-            Try
-                Connection.Open()
-                InsertHistoryEntryCommand.ExecuteNonQuery()
-            Catch ex As Exception
-                Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                Exit Sub
-            Finally
-                Connection.Close()
-            End Try
+            'Dim EntryString As String = String.Empty
+            'EntryString = HistoryDatabasebUpdateIntro
+            'EntryString += NewReportIntro("Relation", NewRelation_ID)
+            'EntryString += HistoryEntryReferencedValue("Relation", NewRelation_ID, "Medication", tables.Medications, fields.Name, Nothing, ParentID(tables.Medications, tables.MedicationsPerICSR, fields.Medication_ID, NewMedicationPerICSR_ID))
+            'EntryString += HistoryEntryReferencedValue("Relation", NewRelation_ID, "Event", tables.AEs, fields.MedDRATerm, Nothing, NewAE_ID)
+            'EntryString += HistoryEntryReferencedValue("Relation", NewRelation_ID, "Relatedness as per Reporter", tables.RelatednessCriteriaReporter, fields.Name, Nothing, NewRelatednessCriterionReporter_ID)
+            'EntryString += HistoryEntryReferencedValue("Relation", NewRelation_ID, "Relatedness as per Manufacturer", tables.RelatednessCriteriaManufacturer, fields.Name, Nothing, NewRelatednessCriterionManufacturer_ID)
+            'EntryString += HistoryEntryReferencedValue("Relation", NewRelation_ID, "Expectedness", tables.ExpectednessCriteria, fields.Name, Nothing, NewExpectednessCriterion_ID)
+            'EntryString += HistoryDatabasebUpdateOutro
+            'Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories(ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, @Entry)", Connection)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
+            'Try
+            '    Connection.Open()
+            '    InsertHistoryEntryCommand.ExecuteNonQuery()
+            'Catch ex As Exception
+            '    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+            '    Exit Sub
+            'Finally
+            '    Connection.Close()
+            'End Try
             'Format Page Controls
             AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, Nothing, Cancel_Button, ReturnToICSROverview_Button)
             DropDownListDisabled(AEs_DropDownList)

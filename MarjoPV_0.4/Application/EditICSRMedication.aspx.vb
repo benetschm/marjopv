@@ -20,15 +20,13 @@ Partial Class Application_EditICSRMedication
         End If
 
         'Determine why page was called, store reason in variables and redirect to parent page if query string is invalid
-        Dim PageCalledToCreate As Boolean = False
-        Dim PageCalledToEdit As Boolean = False
-        Dim PageCalledToDelete As Boolean = False
+        Dim PageCallReason As PageCallReasons
         If Not (Request.QueryString("ICSRID") Is Nothing) Then
-            PageCalledToCreate = True
+            PageCallReason = PageCallReasons.Create
         ElseIf Not (Request.Item("ICSRMedicationID") Is Nothing) And (Request.Item("Delete") Is Nothing) Then
-            PageCalledToEdit = True
+            PageCallReason = PageCallReasons.Edit
         ElseIf Not (Request.Item("ICSRMedicationID") Is Nothing) And Not (Request.QueryString("Delete") Is Nothing) Then
-            PageCalledToDelete = True
+            PageCallReason = PageCallReasons.Delete
         Else
             Response.Redirect("~/Application/ICSRs.aspx")
             Exit Sub
@@ -38,46 +36,46 @@ Partial Class Application_EditICSRMedication
         Dim CurrentICSR_ID As Integer = Nothing
         Dim CurrentICSRMedication_ID As Integer = Nothing
         Dim Delete As Boolean = False
-        If PageCalledToCreate = True Then
+        If PageCallReason = PageCallReasons.Create Then
             ICSRID_HiddenField.Value = Request.QueryString("ICSRID")
             CurrentICSR_ID = ICSRID_HiddenField.Value
         End If
-        If PageCalledToEdit = True Or PageCalledToDelete = True Then
+        If PageCallReason = PageCallReasons.Edit Or PageCallReason = PageCallReasons.Delete Then
             ICSRMedicationID_HiddenField.Value = Request.QueryString("ICSRMedicationID")
             CurrentICSRMedication_ID = ICSRMedicationID_HiddenField.Value
             ICSRID_HiddenField.Value = ParentID(tables.ICSRs, tables.MedicationsPerICSR, fields.ICSR_ID, CurrentICSRMedication_ID)
             CurrentICSR_ID = ICSRID_HiddenField.Value
         End If
-        If PageCalledToDelete = True Then
+        If PageCallReason = PageCallReasons.Delete Then
             Delete_HiddenField.Value = Request.QueryString("Delete")
             Delete = Delete_HiddenField.Value
         End If
 
         'Populate Title_Label
-        If PageCalledToCreate = True Then
+        If PageCallReason = PageCallReasons.Create Then
             Title_Label.Text = "ICSR " & CurrentICSR_ID & ": Add ICSR Medication"
-        ElseIf PageCalledToEdit = True Then
+        ElseIf PageCallReason = PageCallReasons.Edit Then
             Title_Label.Text = "ICSR " & CurrentICSR_ID & ": Edit ICSR Medication " & CurrentICSRMedication_ID
-        ElseIf PageCalledToDelete = True Then
+        ElseIf PageCallReason = PageCallReasons.Delete Then
             Title_Label.Text = "ICSR " & CurrentICSR_ID & ": Delete ICSR Medication " & CurrentICSRMedication_ID
         End If
 
         'Lock out if user does not have adequate edit rights
-        If PageCalledToCreate = True Then
+        If PageCallReason = PageCallReasons.Create Then
             If CanEdit(tables.ICSRs, CurrentICSR_ID, tables.MedicationsPerICSR, fields.Create) = False Then
                 Title_Label.Text = Lockout_Text
                 ButtonGroup_Div.Visible = False
                 Main_Table.Visible = False
                 Exit Sub
             End If
-        ElseIf PageCalledToEdit = True Then
+        ElseIf PageCallReason = PageCallReasons.Edit Then
             If CanEdit(tables.ICSRs, CurrentICSR_ID, tables.MedicationsPerICSR, fields.Edit) = False Then
                 Title_Label.Text = Lockout_Text
                 ButtonGroup_Div.Visible = False
                 Main_Table.Visible = False
                 Exit Sub
             End If
-        ElseIf PageCalledToDelete = True Then
+        ElseIf PageCallReason = PageCallReasons.Delete Then
             If CanEdit(tables.ICSRs, CurrentICSR_ID, tables.MedicationsPerICSR, fields.Delete) = False Then
                 Title_Label.Text = Lockout_Text
                 ButtonGroup_Div.Visible = False
@@ -87,7 +85,7 @@ Partial Class Application_EditICSRMedication
         End If
 
         'Format controls based on edit rights
-        If PageCalledToCreate = True Or PageCalledToEdit = True Then
+        If PageCallReason = PageCallReasons.Create Or PageCallReason = PageCallReasons.Edit Then
             AtEditPageLoadButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToICSROverview_Button)
             If CanEdit(tables.ICSRs, CurrentICSR_ID, tables.MedicationsPerICSR, fields.MedicationPerICSRRole_ID) = True Then
                 DropDownListEnabled(MedicationPerICSRRoles_DropDownList)
@@ -134,7 +132,7 @@ Partial Class Application_EditICSRMedication
             Else
                 DropDownListDisabled(DrugActions_DropDownList)
             End If
-        ElseIf PageCalledToDelete = True Then
+        ElseIf PageCallReason = PageCallReasons.Delete Then
             AtDeleteButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToICSROverview_Button)
             DropDownListDisabled(MedicationPerICSRRoles_DropDownList)
             DropDownListDisabled(Medications_DropDownList)
@@ -146,7 +144,7 @@ Partial Class Application_EditICSRMedication
         End If
 
         'Check if page is called to delete and there is a dataset in 'Relations' which is dependent on the current dataset
-        If PageCalledToDelete = True Then
+        If PageCallReason = PageCallReasons.Delete Then
             If RelationDependency(CurrentICSRMedication_ID) = True Then
                 AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToICSROverview_Button)
                 Status_Label.CssClass = CssClassFailure
@@ -169,7 +167,7 @@ Partial Class Application_EditICSRMedication
         DrugActions_DropDownList.DataBind()
 
         'Populate data fields
-        If PageCalledToEdit = True Or PageCalledToDelete = True Then
+        If PageCallReason = PageCallReasons.Edit Or PageCallReason = PageCallReasons.Delete Then
             Dim AtEditPageLoadReadCommand As New SqlCommand("SELECT CASE WHEN MedicationPerICSRRole_ID IS NULL THEN 0 ELSE MedicationPerICSRRole_ID END AS MedicationPerICSRRole_ID, CASE WHEN Medication_ID IS NULL THEN 0 ELSE Medication_ID END AS Medication_ID, CASE WHEN TotalDailyDose IS NULL THEN 0 ELSE TotalDailyDose END AS TotalDailyDose, CASE WHEN Allocations IS NULL THEN 0 ELSE Allocations END AS Allocations, CASE WHEN Start IS NULL THEN 0 ELSE Start END AS Start, CASE WHEN Stop IS NULL THEN 0 ELSE Stop END AS Stop, CASE WHEN DrugAction_ID IS NULL THEN 0 ELSE DrugAction_ID END AS DrugAction_ID FROM MedicationsPerICSR WHERE ID = @CurrentICSRMedication_ID", Connection)
             AtEditPageLoadReadCommand.Parameters.AddWithValue("@CurrentICSRMedication_ID", CurrentICSRMedication_ID)
             Try
@@ -200,7 +198,7 @@ Partial Class Application_EditICSRMedication
         End If
 
         'Specify dose type in TotalDailyDose_Textbox label
-        If PageCalledToEdit = True Or PageCalledToDelete = True Then
+        If PageCallReason = PageCallReasons.Edit Or PageCallReason = PageCallReasons.Delete Then
             Dim Medications_DropDownList_SelectedValue_DoseType_Name As String = String.Empty
             Dim DoseTypeReadCommand As New SqlCommand("SELECT DoseTypes.Name FROM Medications INNER JOIN DoseTypes ON DoseTypes.ID = Medications.DoseType_ID WHERE Medications.ID = @SelectedMedication_ID", Connection)
             DoseTypeReadCommand.Parameters.AddWithValue("@SelectedMedication_ID", Medications_DropDownList.SelectedValue)
@@ -385,48 +383,46 @@ Partial Class Application_EditICSRMedication
         End If
 
         'Determine why page was called and store reason in variables
-        Dim PageCalledToCreate As Boolean = False
-        Dim PageCalledToEdit As Boolean = False
-        Dim PageCalledToDelete As Boolean = False
+        Dim PageCallReason As PageCallReasons
         If ICSRMedicationID_HiddenField.Value = String.Empty And Delete_HiddenField.Value = String.Empty Then
-            PageCalledToCreate = True
+            PageCallReason = PageCallReasons.Create
         ElseIf ICSRMedicationID_HiddenField.Value <> String.Empty And Delete_HiddenField.Value = String.Empty Then
-            PageCalledToEdit = True
+            PageCallReason = PageCallReasons.Edit
         ElseIf Delete_HiddenField.Value <> String.Empty Then
-            PageCalledToDelete = True
+            PageCallReason = PageCallReasons.Delete
         End If
 
         'Store values from hidden fields in variables
         Dim CurrentICSR_ID As Integer = Nothing
         Dim CurrentICSRMedication_ID As Integer = Nothing
         Dim Delete As Boolean = False
-        If PageCalledToCreate = True Then
+        If PageCallReason = PageCallReasons.Create Then
             CurrentICSR_ID = ICSRID_HiddenField.Value
         End If
-        If PageCalledToEdit = True Or PageCalledToDelete = True Then
+        If PageCallReason = PageCallReasons.Edit Or PageCallReason = PageCallReasons.Delete Then
             CurrentICSRMedication_ID = ICSRMedicationID_HiddenField.Value
             CurrentICSR_ID = ICSRID_HiddenField.Value
         End If
-        If PageCalledToDelete = True Then
+        If PageCallReason = PageCallReasons.Delete Then
             Delete = Delete_HiddenField.Value
         End If
 
         'Lock out if user does not have adequate edit rights
-        If PageCalledToCreate = True Then
+        If PageCallReason = PageCallReasons.Create Then
             If CanEdit(tables.ICSRs, CurrentICSR_ID, tables.MedicationsPerICSR, fields.Create) = False Then
                 Title_Label.Text = Lockout_Text
                 ButtonGroup_Div.Visible = False
                 Main_Table.Visible = False
                 Exit Sub
             End If
-        ElseIf PageCalledToEdit = True Then
+        ElseIf PageCallReason = PageCallReasons.Edit Then
             If CanEdit(tables.ICSRs, CurrentICSR_ID, tables.MedicationsPerICSR, fields.Edit) = False Then
                 Title_Label.Text = Lockout_Text
                 ButtonGroup_Div.Visible = False
                 Main_Table.Visible = False
                 Exit Sub
             End If
-        ElseIf PageCalledToDelete = True Then
+        ElseIf PageCallReason = PageCallReasons.Delete Then
             If CanEdit(tables.ICSRs, CurrentICSR_ID, tables.MedicationsPerICSR, fields.Delete) = False Then
                 Title_Label.Text = Lockout_Text
                 ButtonGroup_Div.Visible = False
@@ -437,7 +433,7 @@ Partial Class Application_EditICSRMedication
 
         'Format Controls
         AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToICSROverview_Button)
-        If PageCalledToCreate = True Or PageCalledToEdit = True Then
+        If PageCallReason = PageCallReasons.Create Or PageCallReason = PageCallReasons.Edit Then
             DropDownListDisabled(MedicationPerICSRRoles_DropDownList)
             DropDownListDisabled(Medications_DropDownList)
             TextBoxReadOnly(TotalDailyDose_Textbox)
@@ -445,7 +441,7 @@ Partial Class Application_EditICSRMedication
             TextBoxReadOnly(Start_Textbox)
             TextBoxReadOnly(Stop_Textbox)
             DropDownListDisabled(DrugActions_DropDownList)
-        ElseIf PageCalledToDelete = True Then
+        ElseIf PageCallReason = PageCallReasons.Delete Then
             MedicationRole_Row.Visible = False
             MedicationName_Row.Visible = False
             TotalDailyDose_Row.Visible = False
@@ -456,55 +452,18 @@ Partial Class Application_EditICSRMedication
         End If
 
         'Warn & abort if there are discrepancies between the data as shown at edit page load and as stored at save button click
-        Dim AtEditPageLoad_MedicationPerICSRRole_ID As Integer = TryCType(AtEditPageLoad_MedicationPerICSRRole_ID_HiddenField.Value, InputTypes.Integer)
-        Dim AtEditPageLoad_Medication_ID As Integer = TryCType(AtEditPageLoad_Medication_ID_HiddenField.Value, InputTypes.Integer)
-        Dim AtEditPageLoad_TotalDailyDose As Integer = TryCType(AtEditPageLoad_TotalDailyDose_HiddenField.Value, InputTypes.Integer)
-        Dim AtEditPageLoad_Allocations As Integer = TryCType(AtEditPageLoad_Allocations_HiddenField.Value, InputTypes.Integer)
-        Dim AtEditPageLoad_Start As DateTime = TryCType(AtEditPageLoad_Start_HiddenField.Value, InputTypes.Date)
-        Dim AtEditPageLoad_Stop As DateTime = TryCType(AtEditPageLoad_Stop_HiddenField.Value, InputTypes.Date)
-        Dim AtEditPageLoad_DrugAction_ID As Integer = TryCType(AtEditPageLoad_DrugAction_ID_HiddenField.Value, InputTypes.Integer)
-        Dim AtSaveButtonClick_MedicationPerICSRRole_ID As Integer = Nothing
-        Dim AtSaveButtonClick_Medication_ID As Integer = Nothing
-        Dim AtSaveButtonClick_TotalDailyDose As Integer = Nothing
-        Dim AtSaveButtonClick_Allocations As Integer = Nothing
-        Dim AtSaveButtonClick_Start As DateTime = Date.MinValue
-        Dim AtSaveButtonClick_Stop As DateTime = Date.MinValue
-        Dim AtSaveButtonClick_DrugAction_ID As Integer = Nothing
-        If PageCalledToEdit = True Or PageCalledToDelete = True Then
-            Dim AtSaveButtonClickReadCommand As New SqlCommand("SELECT CASE WHEN MedicationPerICSRRole_ID IS NULL THEN 0 ELSE MedicationPerICSRRole_ID END AS MedicationPerICSRRole_ID, CASE WHEN Medication_ID IS NULL THEN 0 ELSE Medication_ID END AS Medication_ID, CASE WHEN TotalDailyDose IS NULL THEN 0 ELSE TotalDailyDose END AS TotalDailyDose, CASE WHEN Allocations IS NULL THEN 0 ELSE Allocations END AS Allocations, CASE WHEN Start IS NULL THEN '' ELSE Start END AS Start, CASE WHEN Stop IS NULL THEN '' ELSE Stop END AS Stop, CASE WHEN DrugAction_ID IS NULL THEN 0 ELSE DrugAction_ID END AS DrugAction_ID FROM MedicationsPerICSR WHERE ID = @CurrentICSRMedication_ID", Connection)
-            AtSaveButtonClickReadCommand.Parameters.AddWithValue("@CurrentICSRMedication_ID", CurrentICSRMedication_ID)
-            Try
-                Connection.Open()
-                Dim AtSaveButtonClickReader As SqlDataReader = AtSaveButtonClickReadCommand.ExecuteReader()
-                While AtSaveButtonClickReader.Read()
-                    AtSaveButtonClick_MedicationPerICSRRole_ID = AtSaveButtonClickReader.GetInt32(0)
-                    AtSaveButtonClick_Medication_ID = AtSaveButtonClickReader.GetInt32(1)
-                    AtSaveButtonClick_TotalDailyDose = AtSaveButtonClickReader.GetInt32(2)
-                    AtSaveButtonClick_Allocations = AtSaveButtonClickReader.GetInt32(3)
-                    AtSaveButtonClick_Start = DateOrDateMinValue(AtSaveButtonClickReader.GetDateTime(4))
-                    AtSaveButtonClick_Stop = DateOrDateMinValue(AtSaveButtonClickReader.GetDateTime(5))
-                    AtSaveButtonClick_DrugAction_ID = AtSaveButtonClickReader.GetInt32(6)
-                End While
-            Catch ex As Exception
-                Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                Exit Sub
-            Finally
-                Connection.Close()
-            End Try
+        If PageCallReason = PageCallReasons.Edit Or PageCallReason = PageCallReasons.Delete Then
             Dim DiscrepancyString As String = String.Empty
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_MedicationPerICSRRole_ID, AtSaveButtonClick_MedicationPerICSRRole_ID, "Role")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Medication_ID, AtSaveButtonClick_Medication_ID, "Medication")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_TotalDailyDose, AtSaveButtonClick_TotalDailyDose, "Total Daily Dose")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Allocations, AtSaveButtonClick_Allocations, "Allocations")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Start, AtSaveButtonClick_Start, "Start Date")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Stop, AtSaveButtonClick_Stop, "Stop Date")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_DrugAction_ID, AtSaveButtonClick_DrugAction_ID, "Action Taken With Drug")
+            DiscrepancyString += DiscrepancyCheck(tables.MedicationsPerICSR, fields.MedicationPerICSRRole_ID, InputTypes.Integer, CurrentICSRMedication_ID, AtEditPageLoad_MedicationPerICSRRole_ID_HiddenField)
+            DiscrepancyString += DiscrepancyCheck(tables.MedicationsPerICSR, fields.Medication_ID, InputTypes.Integer, CurrentICSRMedication_ID, AtEditPageLoad_Medication_ID_HiddenField)
+            DiscrepancyString += DiscrepancyCheck(tables.MedicationsPerICSR, fields.TotalDailyDose, InputTypes.Integer, CurrentICSRMedication_ID, AtEditPageLoad_TotalDailyDose_HiddenField)
+            DiscrepancyString += DiscrepancyCheck(tables.MedicationsPerICSR, fields.Allocations, InputTypes.Integer, CurrentICSRMedication_ID, AtEditPageLoad_Allocations_HiddenField)
+            DiscrepancyString += DiscrepancyCheck(tables.MedicationsPerICSR, fields.Start, InputTypes.Date, CurrentICSRMedication_ID, AtEditPageLoad_Start_HiddenField)
+            DiscrepancyString += DiscrepancyCheck(tables.MedicationsPerICSR, fields.Stop, InputTypes.Date, CurrentICSRMedication_ID, AtEditPageLoad_Stop_HiddenField)
+            DiscrepancyString += DiscrepancyCheck(tables.MedicationsPerICSR, fields.DrugAction_ID, InputTypes.Integer, CurrentICSRMedication_ID, AtEditPageLoad_DrugAction_ID_HiddenField)
             If DiscrepancyString <> String.Empty Then
                 AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToICSROverview_Button)
-                Status_Label.Style.Add("text-align", "left")
-                Status_Label.Style.Add("height", "auto")
-                Status_Label.Text = DiscrepancyStringIntro & DiscrepancyString & DiscrepancyStringOutro
-                Status_Label.CssClass = "form-control alert-danger"
+                ShowDiscrepancyWarning(Status_Label, DiscrepancyString)
                 DropDownListDisabled(MedicationPerICSRRoles_DropDownList)
                 DropDownListDisabled(Medications_DropDownList)
                 TextBoxReadOnly(TotalDailyDose_Textbox)
@@ -519,7 +478,7 @@ Partial Class Application_EditICSRMedication
         'Store updates in database
         Dim UpdateCommand As New SqlCommand
         UpdateCommand.Connection = Connection
-        If PageCalledToCreate = True Then
+        If PageCallReason = PageCallReasons.Create Then
             UpdateCommand.CommandText = "INSERT INTO MedicationsPerICSR (ICSR_ID, Medication_ID, TotalDailyDose, Allocations, Start, Stop, DrugAction_ID, MedicationPerICSRRole_ID) VALUES(@CurrentICSR_ID, @Medication_ID, CASE WHEN @TotalDailyDose = 0 THEN NULL ELSE @TotalDailyDose END, CASE WHEN @Allocations = 0 THEN NULL ELSE @Allocations END, CASE WHEN @Start = '' THEN NULL ELSE @Start END, CASE WHEN @Stop = '' THEN NULL ELSE @Stop END, CASE WHEN @DrugAction_ID = 0 THEN NULL ELSE @DrugAction_ID END, CASE WHEN @MedicationPerICSRRole_ID = 0 THEN NULL ELSE @MedicationPerICSRRole_ID END)"
             UpdateCommand.Parameters.AddWithValue("@CurrentICSR_ID", CurrentICSR_ID)
             UpdateCommand.Parameters.AddWithValue("@Medication_ID", Medications_DropDownList.SelectedValue)
@@ -529,7 +488,7 @@ Partial Class Application_EditICSRMedication
             UpdateCommand.Parameters.AddWithValue("@Stop", DateStringOrEmpty(Stop_Textbox.Text.Trim))
             UpdateCommand.Parameters.AddWithValue("@DrugAction_ID", DrugActions_DropDownList.SelectedValue)
             UpdateCommand.Parameters.AddWithValue("@MedicationPerICSRRole_ID", MedicationPerICSRRoles_DropDownList.SelectedValue)
-        ElseIf PageCalledToEdit = True Then
+        ElseIf PageCallReason = PageCallReasons.Edit Then
             UpdateCommand.CommandText = "UPDATE MedicationsPerICSR SET MedicationPerICSRRole_ID = (CASE WHEN @MedicationPerICSRRole_ID = 0 THEN NULL ELSE @MedicationPerICSRRole_ID END), Medication_ID = (CASE WHEN @Medication_ID = 0 THEN NULL ELSE @Medication_ID END), TotalDailyDose = (CASE WHEN @TotalDailyDose = 0 THEN NULL ELSE @TotalDailyDose END), Allocations = (CASE WHEN @Allocations = 0 THEN NULL ELSE @Allocations END), Start = (CASE WHEN @Start = '' THEN NULL ELSE @Start END), Stop = (CASE WHEN @Stop = '' THEN NULL ELSE @Stop END), DrugAction_ID = (CASE WHEN @DrugAction_ID = 0 THEN NULL ELSE @DrugAction_ID END) WHERE ID = @CurrentICSRMedication_ID"
             UpdateCommand.Parameters.AddWithValue("@MedicationPerICSRRole_ID", MedicationPerICSRRoles_DropDownList.SelectedValue)
             UpdateCommand.Parameters.AddWithValue("@Medication_ID", Medications_DropDownList.SelectedValue)
@@ -539,51 +498,30 @@ Partial Class Application_EditICSRMedication
             UpdateCommand.Parameters.AddWithValue("@Stop", DateStringOrEmpty(Stop_Textbox.Text.Trim))
             UpdateCommand.Parameters.AddWithValue("@DrugAction_ID", DrugActions_DropDownList.SelectedValue)
             UpdateCommand.Parameters.AddWithValue("@CurrentICSRMedication_ID", CurrentICSRMedication_ID)
-        ElseIf PageCalledToDelete = True Then
+        ElseIf PageCallReason = PageCallReasons.Delete Then
             UpdateCommand.CommandText = "DELETE FROM MedicationsPerICSR WHERE ID = @CurrentICSRMedication_ID"
             UpdateCommand.Parameters.AddWithValue("@CurrentICSRMedication_ID", CurrentICSRMedication_ID)
         End If
-        Try
-            Connection.Open()
-            UpdateCommand.ExecuteNonQuery()
-        Catch ex As Exception
-            Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-            Exit Sub
-        Finally
-            Connection.Close()
-        End Try
+        'Try
+        Connection.Open()
+        UpdateCommand.ExecuteNonQuery()
+        'Catch ex As Exception
+        '    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+        '    Exit Sub
+        'Finally
+        Connection.Close()
+        'End Try
 
         'Add audit trail entry
-        Dim UpdatedReadCommand As New SqlCommand
-        UpdatedReadCommand.Connection = Connection
-        Dim Updated_MedicationPerICSRRole_ID As Integer = Nothing
-        Dim Updated_Medication_ID As Integer = Nothing
-        Dim Updated_TotalDailyDose As Integer = Nothing
-        Dim Updated_Allocations As Integer = Nothing
-        Dim Updated_Start As DateTime = Date.MinValue
-        Dim Updated_Stop As DateTime = Date.MinValue
-        Dim Updated_DrugAction_ID As Integer = Nothing
         Dim EntryString As String = HistoryDatabasebUpdateIntro
-        If PageCalledToCreate = True Then
-            UpdatedReadCommand.CommandText = "SELECT TOP 1 ID, CASE WHEN MedicationPerICSRRole_ID IS NULL THEN 0 ELSE MedicationPerICSRRole_ID END AS MedicationPerICSRRole_ID, CASE WHEN Medication_ID IS NULL THEN 0 ELSE Medication_ID END AS Medication_ID, CASE WHEN TotalDailyDose IS NULL THEN 0 ELSE TotalDailyDose END AS TotalDailyDose, CASE WHEN Allocations IS NULL THEN 0 ELSE Allocations END AS Allocations, CASE WHEN Start IS NULL THEN '' ELSE Start END AS Start, CASE WHEN Stop IS NULL THEN '' ELSE Stop END AS Stop, CASE WHEN DrugAction_ID IS NULL THEN 0 ELSE DrugAction_ID END AS DrugAction_ID FROM MedicationsPerICSR WHERE ICSR_ID = @CurrentICSR_ID ORDER BY ID DESC"
-            UpdatedReadCommand.Parameters.AddWithValue("@CurrentICSR_ID", CurrentICSR_ID)
-        ElseIf PageCalledToEdit = True Then
-            UpdatedReadCommand.CommandText = "SELECT ID, CASE WHEN MedicationPerICSRRole_ID IS NULL THEN 0 ELSE MedicationPerICSRRole_ID END AS MedicationPerICSRRole_ID, CASE WHEN Medication_ID IS NULL THEN 0 ELSE Medication_ID END AS Medication_ID, CASE WHEN TotalDailyDose IS NULL THEN 0 ELSE TotalDailyDose END AS TotalDailyDose, CASE WHEN Allocations IS NULL THEN 0 ELSE Allocations END AS Allocations, CASE WHEN Start IS NULL THEN '' ELSE Start END AS Start, CASE WHEN Stop IS NULL THEN '' ELSE Stop END AS Stop, CASE WHEN DrugAction_ID IS NULL THEN 0 ELSE DrugAction_ID END AS DrugAction_ID FROM MedicationsPerICSR WHERE ID = @CurrentICSRMedication_ID"
-            UpdatedReadCommand.Parameters.AddWithValue("@CurrentICSRMedication_ID", CurrentICSRMedication_ID)
-        End If
-        If PageCalledToCreate = True Or PageCalledToEdit = True Then
+        If PageCallReason = PageCallReasons.Create Then
+            Dim NewICSRMedicationReadCommand As New SqlCommand("SELECT TOP 1 ID FROM MedicationsPerICSR WHERE ICSR_ID = @CurrentICSR_ID ORDER BY ID DESC", Connection)
+            NewICSRMedicationReadCommand.Parameters.AddWithValue("@CurrentICSR_ID", CurrentICSR_ID)
             Try
                 Connection.Open()
-                Dim UpdatedReader As SqlDataReader = UpdatedReadCommand.ExecuteReader()
-                While UpdatedReader.Read()
-                    CurrentICSRMedication_ID = UpdatedReader.GetInt32(0)
-                    Updated_MedicationPerICSRRole_ID = UpdatedReader.GetInt32(1)
-                    Updated_Medication_ID = UpdatedReader.GetInt32(2)
-                    Updated_TotalDailyDose = UpdatedReader.GetInt32(3)
-                    Updated_Allocations = UpdatedReader.GetInt32(4)
-                    Updated_Start = DateOrDateMinValue(UpdatedReader.GetDateTime(5))
-                    Updated_Stop = DateOrDateMinValue(UpdatedReader.GetDateTime(6))
-                    Updated_DrugAction_ID = UpdatedReader.GetInt32(7)
+                Dim NewICSRMedicationReader As SqlDataReader = NewICSRMedicationReadCommand.ExecuteReader()
+                While NewICSRMedicationReader.Read()
+                    CurrentICSRMedication_ID = NewICSRMedicationReader.GetInt32(0)
                 End While
             Catch ex As Exception
                 Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
@@ -591,49 +529,18 @@ Partial Class Application_EditICSRMedication
             Finally
                 Connection.Close()
             End Try
-        End If
-        If PageCalledToCreate = True Then
             EntryString += NewReportIntro("ICSR Medication", CurrentICSRMedication_ID)
-        ElseIf PageCalledToDelete = True Then
+        ElseIf PageCallReason = PageCallReasons.Delete Then
             EntryString += DeleteReportIntro("ICSR Medication", CurrentICSRMedication_ID)
         End If
-        If Updated_MedicationPerICSRRole_ID <> AtSaveButtonClick_MedicationPerICSRRole_ID Then
-            EntryString += HistoryEntryReferencedValue("ICSR Medication", CurrentICSRMedication_ID, "Role", tables.MedicationPerICSRRoles, fields.Name, AtSaveButtonClick_MedicationPerICSRRole_ID, Updated_MedicationPerICSRRole_ID)
-        End If
-        If Updated_Medication_ID <> AtSaveButtonClick_Medication_ID Then
-            EntryString += HistoryEntryReferencedValue("ICSR Medication", CurrentICSRMedication_ID, "Medication", tables.Medications, fields.Name, AtSaveButtonClick_Medication_ID, Updated_Medication_ID)
-        End If
-        If Updated_TotalDailyDose <> AtSaveButtonClick_TotalDailyDose Then
-            EntryString += HistoryEnrtyPlainValue("ICSR Medication", CurrentICSRMedication_ID, "Total Daily Dose", AtSaveButtonClick_TotalDailyDose, Updated_TotalDailyDose)
-        End If
-        If Updated_Allocations <> AtSaveButtonClick_Allocations Then
-            EntryString += HistoryEnrtyPlainValue("ICSR Medication", CurrentICSRMedication_ID, "Allocations per Day", AtSaveButtonClick_Allocations, Updated_Allocations)
-        End If
-        If Updated_Start <> AtSaveButtonClick_Start Then
-            EntryString += HistoryEnrtyPlainValue("ICSR Medication", CurrentICSRMedication_ID, "Start Date", AtSaveButtonClick_Start, Updated_Start)
-        End If
-        If Updated_Stop <> AtSaveButtonClick_Stop Then
-            EntryString += HistoryEnrtyPlainValue("ICSR Medication", CurrentICSRMedication_ID, "Stop Date", AtSaveButtonClick_Stop, Updated_Stop)
-        End If
-        If Updated_DrugAction_ID <> AtSaveButtonClick_DrugAction_ID Then
-            EntryString += HistoryEntryReferencedValue("ICSR Medication", CurrentICSRMedication_ID, "Action Taken With Drug", tables.DrugActions, fields.Name, AtSaveButtonClick_DrugAction_ID, Updated_DrugAction_ID)
-        End If
-        If EntryString <> HistoryDatabasebUpdateIntro & HistoryDatabasebUpdateOutro Then
-            Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories(ICSR_ID, User_ID, Timepoint, Entry) VALUES (@CurrentICSR_ID, @User_ID, @Timepoint, @Entry)", Connection)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@CurrentICSR_ID", CurrentICSR_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-            Try
-                Connection.Open()
-                InsertHistoryEntryCommand.ExecuteNonQuery()
-            Catch ex As Exception
-                Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                Exit Sub
-            Finally
-                Connection.Close()
-            End Try
-        End If
+        EntryString += HistoryEntryReferencedValue(PageCallReason, "ICSR Medication", CurrentICSRMedication_ID, "Role", tables.MedicationPerICSRRoles, fields.Name, TryCType(AtEditPageLoad_MedicationPerICSRRole_ID_HiddenField.Value, InputTypes.Integer), TryCType(MedicationPerICSRRoles_DropDownList.SelectedValue, InputTypes.Integer))
+        EntryString += HistoryEntryReferencedValue(PageCallReason, "ICSR Medication", CurrentICSRMedication_ID, "Name", tables.Medications, fields.Name, TryCType(AtEditPageLoad_Medication_ID_HiddenField.Value, InputTypes.Integer), TryCType(Medications_DropDownList.SelectedValue, InputTypes.Integer))
+        EntryString += HistoryEntryPlainValue(PageCallReason, "ICSR Medication", CurrentICSRMedication_ID, "Total Daily Dose", TryCType(AtEditPageLoad_TotalDailyDose_HiddenField.Value, InputTypes.Integer), TryCType(TotalDailyDose_Textbox.Text, InputTypes.Integer))
+        EntryString += HistoryEntryPlainValue(PageCallReason, "ICSR Medication", CurrentICSRMedication_ID, "Allocations per Day", TryCType(AtEditPageLoad_Allocations_HiddenField.Value, InputTypes.Integer), TryCType(Allocations_Textbox.Text, InputTypes.Integer))
+        EntryString += HistoryEntryPlainValue(PageCallReason, "ICSR Medication", CurrentICSRMedication_ID, "Start Date", TryCType(AtEditPageLoad_Start_HiddenField.Value, InputTypes.Date), TryCType(Start_Textbox.Text, InputTypes.Date))
+        EntryString += HistoryEntryPlainValue(PageCallReason, "ICSR Medication", CurrentICSRMedication_ID, "Stop Date", TryCType(AtEditPageLoad_Stop_HiddenField.Value, InputTypes.Date), TryCType(Stop_Textbox.Text, InputTypes.Date))
+        EntryString += HistoryEntryReferencedValue(PageCallReason, "ICSR Medication", CurrentICSRMedication_ID, "Action Taken With Drug", tables.DrugActions, fields.Name, TryCType(AtEditPageLoad_DrugAction_ID_HiddenField.Value, InputTypes.Integer), TryCType(DrugActions_DropDownList.SelectedValue, InputTypes.Integer))
+        SaveAuditTrailEntry(CurrentICSR_ID, LoggedIn_User_ID, EntryString)
     End Sub
 
 End Class

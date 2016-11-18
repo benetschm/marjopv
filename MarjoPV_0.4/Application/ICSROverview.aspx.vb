@@ -595,25 +595,25 @@ Partial Class Application_ICSROverview
         Finally
             Connection.Close()
         End Try
-        Dim EntryString As String = String.Empty
-        EntryString = HistoryDatabasebUpdateIntro
-        EntryString += DeleteReportIntro("Attached File", RemovedAttachedFile_ID)
-        EntryString += HistoryEnrtyPlainValue("Attached File", RemovedAttachedFile_ID, "Removed", Date.MinValue, RemovedAttachedFile_Removed)
-        EntryString += HistoryDatabasebUpdateOutro
-        Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories(ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, @Entry)", Connection)
-        InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
-        InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-        InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-        InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-        Try
-            Connection.Open()
-            InsertHistoryEntryCommand.ExecuteNonQuery()
-        Catch ex As Exception
-            Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-            Exit Sub
-        Finally
-            Connection.Close()
-        End Try
+        'Dim EntryString As String = String.Empty
+        'EntryString = HistoryDatabasebUpdateIntro
+        'EntryString += DeleteReportIntro("Attached File", RemovedAttachedFile_ID)
+        'EntryString += HistoryEntryPlainValue("Attached File", RemovedAttachedFile_ID, "Removed", Date.MinValue, RemovedAttachedFile_Removed)
+        'EntryString += HistoryDatabasebUpdateOutro
+        'Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories(ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, @Entry)", Connection)
+        'InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
+        'InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+        'InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+        'InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
+        'Try
+        '    Connection.Open()
+        '    InsertHistoryEntryCommand.ExecuteNonQuery()
+        'Catch ex As Exception
+        '    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+        '    Exit Sub
+        'Finally
+        '    Connection.Close()
+        'End Try
         'Refresh CaseHistoryRepeater
         CaseHistoryRepeater.DataSource = History(tables.ICSRHistories, fields.ICSR_ID, CurrentICSR_ID)
         CaseHistoryRepeater.DataBind()

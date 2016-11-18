@@ -210,30 +210,30 @@ Partial Class Application_CreateAE
             Finally
                 Connection.Close()
             End Try
-            Dim EntryString As String = String.Empty
-            EntryString = HistoryDatabasebUpdateIntro
-            EntryString += NewReportIntro("Event", NewAE_ID)
-            EntryString += HistoryEnrtyPlainValue("Event", NewAE_ID, "MedDRA LLT", String.Empty, NewMedDRATerm)
-            EntryString += HistoryEnrtyPlainValue("Event", NewAE_ID, "Start Date", Date.MinValue, NewStart)
-            EntryString += HistoryEnrtyPlainValue("Event", NewAE_ID, "Stop Date", Date.MinValue, NewStop)
-            EntryString += HistoryEntryReferencedValue("Event", NewAE_ID, "Outcome", tables.Outcomes, fields.Name, Nothing, NewOutcome_ID)
-            EntryString += HistoryEntryReferencedValue("Event", NewAE_ID, "Dechallenge Result", tables.DechallengeResults, fields.Name, Nothing, NewDechallengeResult_ID)
-            EntryString += HistoryEntryReferencedValue("Event", NewAE_ID, "Rechallenge Result", tables.RechallengeResults, fields.Name, Nothing, NewRechallengeResult_ID)
-            EntryString += HistoryDatabasebUpdateOutro
-            Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories(ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, @Entry)", Connection)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-            InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-            Try
-                Connection.Open()
-                InsertHistoryEntryCommand.ExecuteNonQuery()
-            Catch ex As Exception
-                Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                Exit Sub
-            Finally
-                Connection.Close()
-            End Try
+            'Dim EntryString As String = String.Empty
+            'EntryString = HistoryDatabasebUpdateIntro
+            'EntryString += NewReportIntro("Event", NewAE_ID)
+            'EntryString += HistoryEntryPlainValue("Event", NewAE_ID, "MedDRA LLT", String.Empty, NewMedDRATerm)
+            'EntryString += HistoryEntryPlainValue("Event", NewAE_ID, "Start Date", Date.MinValue, NewStart)
+            'EntryString += HistoryEntryPlainValue("Event", NewAE_ID, "Stop Date", Date.MinValue, NewStop)
+            'EntryString += HistoryEntryReferencedValue("Event", NewAE_ID, "Outcome", tables.Outcomes, fields.Name, Nothing, NewOutcome_ID)
+            'EntryString += HistoryEntryReferencedValue("Event", NewAE_ID, "Dechallenge Result", tables.DechallengeResults, fields.Name, Nothing, NewDechallengeResult_ID)
+            'EntryString += HistoryEntryReferencedValue("Event", NewAE_ID, "Rechallenge Result", tables.RechallengeResults, fields.Name, Nothing, NewRechallengeResult_ID)
+            'EntryString += HistoryDatabasebUpdateOutro
+            'Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories(ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, @Entry)", Connection)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+            'InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
+            'Try
+            '    Connection.Open()
+            '    InsertHistoryEntryCommand.ExecuteNonQuery()
+            'Catch ex As Exception
+            '    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+            '    Exit Sub
+            'Finally
+            '    Connection.Close()
+            'End Try
             'Format Page Controls
             AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, Nothing, Cancel_Button, ReturnToICSROverview_Button)
             TextBoxReadOnly(MedDRATerm_Textbox)

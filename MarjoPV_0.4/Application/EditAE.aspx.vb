@@ -282,27 +282,27 @@ Partial Class Application_EditAE
                 Connection.Close()
             End Try
             'Check for discrepancies between database contents as present when edit page was loaded and database contents as present when save button is clicked
-            Dim DiscrepancyString As String = String.Empty
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_MedDRATerm, AtSaveButtonClick_MedDRATerm, "MedDRA LLT")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Start, AtSaveButtonClick_Start, "Start Date")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Stop, AtSaveButtonClick_Stop, "Stop Date")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_DechallengeResult_ID, AtSaveButtonClick_DechallengeResult_ID, "Dechallenge Result")
-            DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_RechallengeResult_ID, AtSaveButtonClick_RechallengeResult_ID, "Rechallenge Result")
+            'Dim DiscrepancyString As String = String.Empty
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_MedDRATerm, AtSaveButtonClick_MedDRATerm, "MedDRA LLT")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Start, AtSaveButtonClick_Start, "Start Date")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_Stop, AtSaveButtonClick_Stop, "Stop Date")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_DechallengeResult_ID, AtSaveButtonClick_DechallengeResult_ID, "Dechallenge Result")
+            'DiscrepancyString += DiscrepancyCheck(AtEditPageLoad_RechallengeResult_ID, AtSaveButtonClick_RechallengeResult_ID, "Rechallenge Result")
             'If Discprepancies between database contents as present when edit page was loaded and database contents as present when save button is clicked are found, show warning and abort update
-            If DiscrepancyString <> String.Empty Then
-                AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToICSROverview_Button)
-                Status_Label.Style.Add("text-align", "left")
-                Status_Label.Style.Add("height", "auto")
-                Status_Label.Text = DiscrepancyStringIntro & DiscrepancyString & DiscrepancyStringOutro
-                Status_Label.CssClass = CssClassFailure
-                TextBoxReadOnly(MedDRATerm_Textbox)
-                TextBoxReadOnly(Start_Textbox)
-                TextBoxReadOnly(Stop_Textbox)
-                DropDownListDisabled(Outcomes_DropDownList)
-                DropDownListDisabled(DechallengeResults_DropDownList)
-                DropDownListDisabled(RechallengeResults_DropDownList)
-                Exit Sub
-            End If
+            'If DiscrepancyString <> String.Empty Then
+            '    AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToICSROverview_Button)
+            '    Status_Label.Style.Add("text-align", "left")
+            '    Status_Label.Style.Add("height", "auto")
+            '    Status_Label.Text = DiscrepancyStringIntro & DiscrepancyString & DiscrepancyStringOutro
+            '    Status_Label.CssClass = CssClassFailure
+            '    TextBoxReadOnly(MedDRATerm_Textbox)
+            '    TextBoxReadOnly(Start_Textbox)
+            '    TextBoxReadOnly(Stop_Textbox)
+            '    DropDownListDisabled(Outcomes_DropDownList)
+            '    DropDownListDisabled(DechallengeResults_DropDownList)
+            '    DropDownListDisabled(RechallengeResults_DropDownList)
+            '    Exit Sub
+            'End If
             'If no discrepancies were found between database contents as present when edit page was loaded and database contents as present when save button is clicked, write updates to database
             Dim UpdateCommand As New SqlCommand
             UpdateCommand.Connection = Connection
@@ -357,35 +357,35 @@ Partial Class Application_EditAE
                 End Try
             End If
             'Compare old and new variables to generate EntryString for Change History Entry
-            Dim EntryString As String = String.Empty
-            EntryString = HistoryDatabasebUpdateIntro
-            If sender Is ConfirmDeletion_Button Then
-                EntryString += DeleteReportIntro("Event", CurrentAE_ID)
-            End If
-            EntryString += HistoryEnrtyPlainValue("Event", CurrentAE_ID, "MedDRA LLT", AtSaveButtonClick_MedDRATerm, Updated_MedDRATerm)
-            EntryString += HistoryEnrtyPlainValue("Event", CurrentAE_ID, "Start Date", AtSaveButtonClick_Start, Updated_Start)
-            EntryString += HistoryEnrtyPlainValue("Event", CurrentAE_ID, "Stop Date", AtSaveButtonClick_Stop, Updated_Stop)
-            EntryString += HistoryEntryReferencedValue("Event", CurrentAE_ID, "Outcome", tables.Outcomes, fields.Name, AtSaveButtonClick_Outcome_ID, Updated_Outcome_ID)
-            EntryString += HistoryEntryReferencedValue("Event", CurrentAE_ID, "Dechallenge Result", tables.DechallengeResults, fields.Name, AtSaveButtonClick_DechallengeResult_ID, Updated_DechallengeResult_ID)
-            EntryString += HistoryEntryReferencedValue("Event", CurrentAE_ID, "Rechallenge Result", tables.RechallengeResults, fields.Name, AtSaveButtonClick_RechallengeResult_ID, Updated_RechallengeResult_ID)
-            EntryString += HistoryDatabasebUpdateOutro
-            'Generate History Entry if any data was changed in the database
-            If EntryString <> HistoryDatabasebUpdateIntro & HistoryDatabasebUpdateOutro Then
-                Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories (ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, CASE WHEN @Entry = '' THEN NULL ELSE @Entry END)", Connection)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
-                InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-                Try
-                    Connection.Open()
-                    InsertHistoryEntryCommand.ExecuteNonQuery()
-                Catch ex As Exception
-                    Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
-                    Exit Sub
-                Finally
-                    Connection.Close()
-                End Try
-            End If
+            'Dim EntryString As String = String.Empty
+            'EntryString = HistoryDatabasebUpdateIntro
+            'If sender Is ConfirmDeletion_Button Then
+            '    EntryString += DeleteReportIntro("Event", CurrentAE_ID)
+            'End If
+            'EntryString += HistoryEntryPlainValue("Event", CurrentAE_ID, "MedDRA LLT", AtSaveButtonClick_MedDRATerm, Updated_MedDRATerm)
+            'EntryString += HistoryEntryPlainValue("Event", CurrentAE_ID, "Start Date", AtSaveButtonClick_Start, Updated_Start)
+            'EntryString += HistoryEntryPlainValue("Event", CurrentAE_ID, "Stop Date", AtSaveButtonClick_Stop, Updated_Stop)
+            'EntryString += HistoryEntryReferencedValue("Event", CurrentAE_ID, "Outcome", tables.Outcomes, fields.Name, AtSaveButtonClick_Outcome_ID, Updated_Outcome_ID)
+            'EntryString += HistoryEntryReferencedValue("Event", CurrentAE_ID, "Dechallenge Result", tables.DechallengeResults, fields.Name, AtSaveButtonClick_DechallengeResult_ID, Updated_DechallengeResult_ID)
+            'EntryString += HistoryEntryReferencedValue("Event", CurrentAE_ID, "Rechallenge Result", tables.RechallengeResults, fields.Name, AtSaveButtonClick_RechallengeResult_ID, Updated_RechallengeResult_ID)
+            'EntryString += HistoryDatabasebUpdateOutro
+            ''Generate History Entry if any data was changed in the database
+            'If EntryString <> HistoryDatabasebUpdateIntro & HistoryDatabasebUpdateOutro Then
+            '    Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories (ICSR_ID, User_ID, Timepoint, Entry) VALUES (@ICSR_ID, @User_ID, @Timepoint, CASE WHEN @Entry = '' THEN NULL ELSE @Entry END)", Connection)
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@ICSR_ID", CurrentICSR_ID)
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
+            '    InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
+            '    Try
+            '        Connection.Open()
+            '        InsertHistoryEntryCommand.ExecuteNonQuery()
+            '    Catch ex As Exception
+            '        Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+            '        Exit Sub
+            '    Finally
+            '        Connection.Close()
+            '    End Try
+            'End If
             'Format Controls
             AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToICSROverview_Button)
             If sender Is SaveUpdates_Button Then
