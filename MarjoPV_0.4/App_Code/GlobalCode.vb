@@ -120,9 +120,9 @@ Public Class GlobalCode
         Selector
     End Enum
 
-    Public Enum [PageCallReasons]
+    Public Enum [CallReasons]
         Create
-        Edit
+        Update
         Delete
     End Enum
 
@@ -332,13 +332,13 @@ Public Class GlobalCode
         Return Datatable
     End Function
 
-    Public Shared Function HistoryEntryReferencedValue(PageCallReason As PageCallReasons, tableName As String, ID As Integer, fieldName As String, referencetable As tables, referencefield As fields, AtSaveButtonClick_ID As Integer, Updated_ID As Integer) As String
+    Public Shared Function HistoryEntryReferencedValue(CallReason As CallReasons, tableName As String, ID As Integer, fieldName As String, referencetable As tables, referencefield As fields, AtSaveButtonClick_ID As Integer, Updated_ID As Integer) As String
 
-        If PageCallReason = PageCallReasons.Create Then
+        If CallReason = CallReasons.Create Then
             AtSaveButtonClick_ID = Nothing
         End If
 
-        If PageCallReason = PageCallReasons.Delete Then
+        If CallReason = CallReasons.Delete Then
             Updated_ID = Nothing
         End If
 
@@ -386,7 +386,7 @@ Public Class GlobalCode
             Finally
                 Connection.Close()
             End Try
-            ReturnString = HistoryEntryPlainValue(PageCallReason, tableName, ID, fieldName, AtSaveButtonClick_Name, Updated_Name)
+            ReturnString = HistoryEntryPlainValue(CallReason, tableName, ID, fieldName, AtSaveButtonClick_Name, Updated_Name)
         Else
             ReturnString = String.Empty
         End If
@@ -415,9 +415,9 @@ Public Class GlobalCode
         Return Result
     End Function
 
-    Public Shared Function HistoryEntryPlainValue(PageCallReason As PageCallReasons, tableName As String, ID As Integer, fieldName As String, AtSaveButtonClick_Value As Object, Updated_Value As Object) As String
+    Public Shared Function HistoryEntryPlainValue(CallReason As CallReasons, tableName As String, ID As Integer, fieldName As String, AtSaveButtonClick_Value As Object, Updated_Value As Object) As String
 
-        If PageCallReason = PageCallReasons.Create Then
+        If CallReason = CallReasons.Create Then
             If TypeOf AtSaveButtonClick_Value Is String Then
                 AtSaveButtonClick_Value = String.Empty
             ElseIf TypeOf AtSaveButtonClick_Value Is Integer Then
@@ -427,7 +427,7 @@ Public Class GlobalCode
             End If
         End If
 
-        If PageCallReason = PageCallReasons.Delete Then
+        If CallReason = CallReasons.Delete Then
             If TypeOf Updated_Value Is String Then
                 Updated_Value = String.Empty
             ElseIf TypeOf Updated_Value Is Integer Then
@@ -792,10 +792,36 @@ Public Class GlobalCode
         Return DropDownListDataTable
     End Function
 
-    Public Shared Function RelationDependency(CurrentICSRMedication_ID As Integer) As Boolean
+    Public Shared Sub RelationDependencyCheck(Field As fields, Field_ID As Integer, Status_Label As Label, SaveUpdates_Button As Button, ConfirmDeletion_Button As Button, Cancel_Button As Button, ReturnToICSROverview_Button As Button)
         Dim DependencyFound As Boolean = False
-        Dim RelationDependencyReadCommand As New SqlCommand("SELECT ID FROM Relations WHERE MedicationPerICSR_ID = @CurrentICSRMedication_ID", Connection)
-        RelationDependencyReadCommand.Parameters.AddWithValue("@CurrentICSRMedication_ID", CurrentICSRMedication_ID)
+        Dim FieldName As String = [Enum].GetName(GetType(fields), Field)
+        Dim RelationDependencyReadCommand As New SqlCommand("SELECT ID FROM Relations WHERE " & FieldName & " = @Field_ID", Connection)
+        RelationDependencyReadCommand.Parameters.AddWithValue("@Field_ID", Field_ID)
+        Try
+            Connection.Open()
+            Dim RelationDependencyReader As SqlDataReader = RelationDependencyReadCommand.ExecuteReader()
+            While RelationDependencyReader.Read()
+                If RelationDependencyReader.GetInt32(0) <> Nothing Then
+                    DependencyFound = True
+                End If
+            End While
+        Catch ex As Exception
+            DependencyFound = True
+        Finally
+            Connection.Close()
+        End Try
+        If DependencyFound = True Then
+            AtSaveButtonClickButtonsFormat(Status_Label, SaveUpdates_Button, Nothing, ConfirmDeletion_Button, Cancel_Button, ReturnToICSROverview_Button)
+            Status_Label.CssClass = CssClassFailure
+            Status_Label.Text = DependencyFoundMessage
+        End If
+    End Sub
+
+    Public Shared Function RelationDependency(Field As fields, Field_ID As Integer) As Boolean
+        Dim DependencyFound As Boolean = False
+        Dim FieldName As String = [Enum].GetName(GetType(fields), Field)
+        Dim RelationDependencyReadCommand As New SqlCommand("SELECT ID FROM Relations WHERE " & FieldName & " = @Field_ID", Connection)
+        RelationDependencyReadCommand.Parameters.AddWithValue("@Field_ID", Field_ID)
         Try
             Connection.Open()
             Dim RelationDependencyReader As SqlDataReader = RelationDependencyReadCommand.ExecuteReader()
@@ -847,7 +873,6 @@ Public Class GlobalCode
     Public Shared Function TryCType(value As Object, InputType As InputTypes) As Object
         Dim Result As Object
         If InputType = InputTypes.Integer Then
-
             Try
                 Result = CType(value, Integer)
                 Return Result
@@ -1174,11 +1199,13 @@ Public Class GlobalCode
         Dim AtSaveButtonClickReadCommand As New SqlCommand
         AtSaveButtonClickReadCommand.Connection = Connection
         AtSaveButtonClickReadCommand.Parameters.AddWithValue("@CurrentDataSet_ID", CurrentDataSet_ID)
+        Dim AtEditPageLoad_Value As Object = Nothing
+        Dim AtSaveButtonClick_Value As Object = Nothing
         Dim AtSaveButtonClickReader As SqlDataReader
         If InputType = InputTypes.String Then
             AtSaveButtonClickReadCommand.CommandText = "SELECT " & FieldToCheckName & " FROM " & TableToCheckName & " WHERE ID = @CurrentDataSet_ID"
-            Dim AtEditPageLoad_Value As String = AtEditPageLoadHiddenField.Value
-            Dim AtSaveButtonClick_Value As String = String.Empty
+            AtEditPageLoad_Value = AtEditPageLoadHiddenField.Value
+            AtSaveButtonClick_Value = String.Empty
             Try
                 Connection.Open()
                 AtSaveButtonClickReader = AtSaveButtonClickReadCommand.ExecuteReader()
@@ -1195,8 +1222,7 @@ Public Class GlobalCode
             End If
         ElseIf InputType = InputTypes.Integer Then
             AtSaveButtonClickReadCommand.CommandText = "SELECT CASE WHEN " & FieldToCheckName & " IS NULL THEN 0 ELSE " & FieldToCheckName & " END AS " & FieldToCheckName & " FROM " & TableToCheckName & " WHERE ID = @CurrentDataSet_ID"
-            Dim AtEditPageLoad_Value As Integer = TryCType(AtEditPageLoadHiddenField.Value, InputTypes.Integer)
-            Dim AtSaveButtonClick_Value As Integer = Nothing
+            AtEditPageLoad_Value = TryCType(AtEditPageLoadHiddenField.Value, InputTypes.Integer)
             Try
                 Connection.Open()
                 AtSaveButtonClickReader = AtSaveButtonClickReadCommand.ExecuteReader()
@@ -1213,8 +1239,8 @@ Public Class GlobalCode
             End If
         ElseIf InputType = InputTypes.Date Then
             AtSaveButtonClickReadCommand.CommandText = "SELECT CASE WHEN " & FieldToCheckName & " IS NULL THEN 0 ELSE " & FieldToCheckName & " END AS " & FieldToCheckName & " FROM " & TableToCheckName & " WHERE ID = @CurrentDataSet_ID"
-            Dim AtEditPageLoad_Value As DateTime = TryCType(AtEditPageLoadHiddenField.Value, InputTypes.Date)
-            Dim AtSaveButtonClick_Value As DateTime = DateTime.MinValue
+            AtEditPageLoad_Value = TryCType(AtEditPageLoadHiddenField.Value, InputTypes.Date)
+            AtSaveButtonClick_Value = DateTime.MinValue
             Try
                 Connection.Open()
                 AtSaveButtonClickReader = AtSaveButtonClickReadCommand.ExecuteReader()
@@ -1231,8 +1257,8 @@ Public Class GlobalCode
             End If
         ElseIf InputType = InputTypes.Boolean Then
             AtSaveButtonClickReadCommand.CommandText = "SELECT CASE WHEN " & FieldToCheckName & " IS NULL THEN 0 ELSE " & FieldToCheckName & " END AS " & FieldToCheckName & " FROM " & TableToCheckName & " WHERE ID = @CurrentDataSet_ID"
-            Dim AtEditPageLoad_Value As Boolean = TryCType(AtEditPageLoadHiddenField.Value, InputTypes.Boolean)
-            Dim AtSaveButtonClick_Value As Boolean = False
+            AtEditPageLoad_Value = TryCType(AtEditPageLoadHiddenField.Value, InputTypes.Boolean)
+            AtSaveButtonClick_Value = False
             Try
                 Connection.Open()
                 AtSaveButtonClickReader = AtSaveButtonClickReadCommand.ExecuteReader()
@@ -1258,22 +1284,103 @@ Public Class GlobalCode
         Status_Label.CssClass = CssClassFailure
     End Sub
 
-    Public Shared Sub SaveAuditTrailEntry(CurrentICSR_ID As Integer, LoggedIn_User_ID As Integer, EntryString As String)
+    Public Shared Sub SaveAuditTrailEntry(sender As Page, CurrentICSR_ID As Integer, LoggedIn_User_ID As Integer, EntryString As String)
         If EntryString <> HistoryDatabasebUpdateIntro & HistoryDatabasebUpdateOutro Then
             Dim InsertHistoryEntryCommand As New SqlCommand("INSERT INTO ICSRHistories(ICSR_ID, User_ID, Timepoint, Entry) VALUES (@CurrentICSR_ID, @User_ID, @Timepoint, @Entry)", Connection)
             InsertHistoryEntryCommand.Parameters.AddWithValue("@CurrentICSR_ID", CurrentICSR_ID)
             InsertHistoryEntryCommand.Parameters.AddWithValue("@User_ID", LoggedIn_User_ID)
             InsertHistoryEntryCommand.Parameters.AddWithValue("@Timepoint", Now())
             InsertHistoryEntryCommand.Parameters.AddWithValue("@Entry", EntryString)
-            Try
-                Connection.Open()
-                InsertHistoryEntryCommand.ExecuteNonQuery()
-            Catch ex As Exception
-                EntryString = DatabaseConnectionErrorString
-            Finally
-                Connection.Close()
-            End Try
+            SqlUpdate(sender, InsertHistoryEntryCommand)
         End If
     End Sub
 
+    Public Shared Sub SqlCreate(sender As Page, SqlStatement As String)
+        Dim CreateCommand As New SqlCommand(SqlStatement, Connection)
+        Try
+            Connection.Open()
+            CreateCommand.ExecuteNonQuery()
+        Catch ex As Exception
+            sender.Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+            Exit Sub
+        Finally
+            Connection.Close()
+        End Try
+    End Sub
+
+    Public Shared Function SqlRead(sender As Page, SqlStatement As String) As DataTable
+        Using SqlReadCommand As New SqlCommand(SqlStatement, Connection)
+            Using SqlReadCommandAdapter As New SqlDataAdapter()
+                SqlReadCommandAdapter.SelectCommand = SqlReadCommand
+                Using ResultsDataTable As New DataTable()
+                    Try
+                        SqlReadCommandAdapter.Fill(ResultsDataTable)
+                    Catch ex As Exception
+                        sender.Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+                    End Try
+                    Return ResultsDataTable
+                End Using
+            End Using
+        End Using
+    End Function
+
+    Public Shared Sub SqlUpdate(sender As Page, UpdateCommand As SqlCommand)
+        UpdateCommand.Connection = Connection
+        'Try
+        Connection.Open()
+            UpdateCommand.ExecuteNonQuery()
+        'Catch ex As Exception
+        'sender.Response.Redirect("~/Errors/DatabaseConnectionError.aspx")
+        'Exit Sub
+        'Finally
+        Connection.Close()
+        'End Try
+    End Sub
+
+    Public Shared Function GetCallReason(sender As Page, QueryStringParameter As String, CallReason_HiddenField As HiddenField) As CallReasons
+        Dim CallReason As CallReasons
+        If Not (sender.Request.QueryString("ICSRID") Is Nothing) Then
+            CallReason = CallReasons.Create
+        ElseIf Not (sender.Request.QueryString(QueryStringParameter) Is Nothing) And (sender.Request.QueryString("Delete") Is Nothing) Then
+            CallReason = CallReasons.Update
+        ElseIf Not (sender.Request.QueryString(QueryStringParameter) Is Nothing) And Not (sender.Request.QueryString("Delete") Is Nothing) Then
+            CallReason = CallReasons.Delete
+        Else
+            sender.Response.Redirect("~/Application/ICSRs.aspx")
+        End If
+        CallReason_HiddenField.Value = CallReason
+        Return CallReason
+    End Function
+
+    Public Shared Sub LockoutCheck(CallReason As CallReasons, CurrentICSR_ID As Integer, ChildTable As tables, Title_Label As Label, ButtonGroup_Div As HtmlGenericControl, Main_Table As UpdatePanel)
+        If CallReason = CallReasons.Create Then
+            If CanEdit(tables.ICSRs, CurrentICSR_ID, ChildTable, fields.Create) = False Then
+                Title_Label.Text = Lockout_Text
+                ButtonGroup_Div.Visible = False
+                Main_Table.Visible = False
+            End If
+        ElseIf CallReason = CallReasons.Update Then
+            If CanEdit(tables.ICSRs, CurrentICSR_ID, ChildTable, fields.Edit) = False Then
+                Title_Label.Text = Lockout_Text
+                ButtonGroup_Div.Visible = False
+                Main_Table.Visible = False
+            End If
+        ElseIf CallReason = CallReasons.Delete Then
+            If CanEdit(tables.ICSRs, CurrentICSR_ID, ChildTable, fields.Delete) = False Then
+                Title_Label.Text = Lockout_Text
+                ButtonGroup_Div.Visible = False
+                Main_Table.Visible = False
+            End If
+        End If
+    End Sub
+
+    Public Shared Sub PopulateDropDownList(DropDownList As DropDownList, Table As tables)
+        DropDownList.DataSource = CreateDropDownListDatatable(Table)
+        DropDownList.DataValueField = "ID"
+        DropDownList.DataTextField = "Name"
+        DropDownList.DataBind()
+    End Sub
+
 End Class
+
+

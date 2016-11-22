@@ -55,7 +55,7 @@
                             <td>
                                 <asp:DropDownList ID="RelatednessCriteriaManufacturer_DropDownList" runat="server" CssClass="form-control" ></asp:DropDownList>
                                 <asp:CustomValidator ID="RelatednessCriteriaManufacturer_DropDownList_Validator" runat="server" OnServerValidate="RelatednessCriteriaManufacturer_DropDownList_Validator_ServerValidate"></asp:CustomValidator>
-                                <asp:HiddenField ID="AtEditPageLoad_RelatednessCriteriaManufacturer_HiddenField" runat="server"></asp:HiddenField>
+                                <asp:HiddenField ID="AtEditPageLoad_RelatednessCriterionManufacturer_HiddenField" runat="server"></asp:HiddenField>
                             </td>
                         </tr>
                         <tr ID="Expectendess_Row" runat="server">
@@ -71,6 +71,7 @@
             </asp:UpdatePanel>
         </div>
     </div>
+    <asp:HiddenField ID="CallReason_HiddenField" runat="server" />
     <asp:HiddenField ID="RelationID_HiddenField" runat="server" />
     <asp:HiddenField ID="Delete_HiddenField" runat="server" />
     <asp:HiddenField ID="ICSRID_HiddenField" runat="server" />

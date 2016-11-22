@@ -467,7 +467,7 @@ Partial Class Application_ICSROverview
     Protected Sub CreateAE_Button_Click(sender As Object, e As EventArgs)
         Dim CurrentICSR_ID As Integer = ICSRID_HiddenField.Value
         Dim CreateAE_Button As Button = CType(sender, Button)
-        Response.Redirect("~/Application/CreateAE.aspx?ICSRID=" & CurrentICSR_ID)
+        Response.Redirect("~/Application/EditAE.aspx?ICSRID=" & CurrentICSR_ID)
     End Sub
 
     Protected Sub EditAE_Button_Click(sender As Object, e As EventArgs)
@@ -485,7 +485,7 @@ Partial Class Application_ICSROverview
     Protected Sub CreateRelation_Button_Click(sender As Object, e As EventArgs)
         Dim CurrentICSR_ID As Integer = ICSRID_HiddenField.Value
         Dim CreateRelation_Button As Button = CType(sender, Button)
-        Response.Redirect("~/Application/CreateRelation.aspx?ICSRID=" & CurrentICSR_ID)
+        Response.Redirect("~/Application/EditRelation.aspx?ICSRID=" & CurrentICSR_ID)
     End Sub
 
     Protected Sub EditRelation_Button_Click(sender As Object, e As EventArgs)

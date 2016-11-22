@@ -4,7 +4,7 @@
        
         'Redirect to login if user is not logged in
         
-        'Determine why page was called, store reason in variables and redirect to parent page if query string is invalid
+        'Determine call reason, store reason in hidden field and redirect to parent page if query string is invalid
        
         'Store query string values in hidden fields and variables
         
@@ -27,8 +27,6 @@
         'Carry out Sub only if input is valid
         
         'Redirect to login if user is not logged in
-        
-        'Determine why page was called and store reason in variables
         
         'Store values from hidden fields in variables
         
