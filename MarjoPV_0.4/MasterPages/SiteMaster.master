@@ -24,16 +24,16 @@
 <body>
     <form runat="server">
         <asp:ScriptManager runat="server" />
-        <%--navigation bar --%>
-        <div class="navbar navbar-inverse navbar-fixed-top">
-            <div class="container">
-                <div class="navbar-header">
+        <%--navigation bar --%>        
+            <div class="navbar navbar-inverse navbar-fixed-top">
+                <div class="container-fluid">
+                    <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                </div>
+                </div>                
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
                         <li><a ID="Home_Link" runat="server" href="~/">Home</a></li>
@@ -46,9 +46,10 @@
                         <li><asp:LinkButton ID="LoggedIn_User_Linkbutton" runat="server" ToolTip="Click here to manage your user account" /></li>
                         <li><asp:LinkButton ID="LoginStatus_Linkbutton" runat="server" /></li>
                     </ul>                          
-                </div>
+                </div>   
+                </div>             
             </div>
-        </div>
+       
         <%--Main Content Placeholder and Footer--%>
         <div ID="main-content" class="container-fluid">
             <br />
@@ -58,25 +59,15 @@
                 <%-- Page Content is executed here --%>
             </asp:ContentPlaceHolder>
         </div>
-        <hr />
-        <footer class="navbar navbar-inverse navbar-bottom">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                </div>
-                <div class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav">
-                        <li><a ID="A1" runat="server" href="~/About.aspx">About</a></li>
-                        <li><a ID="A2" runat="server" href="~/Contact.aspx">Contact</a></li>
-                    </ul>
-                    <ul class="nav navbar-nav navbar-right">
-                        <li><a ID="A3" runat="server" href="~/">Marjo PV Software v0.4 - &copy; <%: DateTime.Now.Year %></a></li>
-                    </ul>                          
-                </div>
+        <footer>
+            <div class="container-fluid">
+                <ul class="nav navbar-nav navbar-left">
+                    <li><a ID="A1" runat="server" href="~/About.aspx">About</a></li>
+                    <li><a ID="A2" runat="server" href="~/Contact.aspx">Contact</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a ID="A3" runat="server" href="~/">Marjo PV Software v0.4 - &copy; <%: DateTime.Now.Year %></a></li>
+                </ul>
             </div>
         </footer>
     </form>

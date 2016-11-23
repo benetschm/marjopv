@@ -54,6 +54,7 @@
                         </tr>
                         </ItemTemplate></asp:Repeater>
                     </table>
+                    <hr />
                 </ContentTemplate>
             </asp:UpdatePanel>
         </div>
