@@ -39,6 +39,7 @@
                             <td>
                                 <asp:Textbox ID="Start_Textbox" runat="server" CssClass="form-control" ></asp:Textbox>
                                 <asp:CustomValidator ID="Start_Textbox_Validator" runat="server" OnServerValidate="Start_Textbox_Validator_ServerValidate"></asp:CustomValidator>
+                                <asp:CustomValidator ID="Start_Textbox_Consistency_Validator" runat="server" OnServerValidate="StartStop_Textbox_Consistency_Validator_ServerValidate"></asp:CustomValidator>
                                 <asp:HiddenField ID="AtEditPageLoad_Start_HiddenField" runat="server"></asp:HiddenField>
                             </td>
                         </tr>
@@ -47,6 +48,7 @@
                             <td>
                                 <asp:Textbox ID="Stop_Textbox" runat="server" CssClass="form-control" ></asp:Textbox>
                                 <asp:CustomValidator ID="Stop_Textbox_Validator" runat="server" OnServerValidate="Stop_Textbox_Validator_ServerValidate"></asp:CustomValidator>
+                                 <asp:CustomValidator ID="Stop_Textbox_Consistency_Validator" runat="server" OnServerValidate="StartStop_Textbox_Consistency_Validator_ServerValidate"></asp:CustomValidator>
                                 <asp:HiddenField ID="AtEditPageLoad_Stop_HiddenField" runat="server"></asp:HiddenField>
                             </td>
                         </tr>
@@ -55,6 +57,7 @@
             </asp:UpdatePanel>
         </div>
     </div>
+    <asp:HiddenField ID="CallReason_HiddenField" runat="server" />
     <asp:HiddenField ID="MedicalHistoryID_HiddenField" runat="server" />
     <asp:HiddenField ID="Delete_HiddenField" runat="server" />
     <asp:HiddenField ID="ICSRID_HiddenField" runat="server" />

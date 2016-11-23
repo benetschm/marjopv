@@ -503,7 +503,7 @@ Partial Class Application_ICSROverview
     Protected Sub CreateMedicalHistory_Button_Click(sender As Object, e As EventArgs)
         Dim CurrentICSR_ID As Integer = ICSRID_HiddenField.Value
         Dim CreateMedicalHistory_Button As Button = CType(sender, Button)
-        Response.Redirect("~/Application/CreateMedicalHistory.aspx?ICSRID=" & CurrentICSR_ID)
+        Response.Redirect("~/Application/EditMedicalHistory.aspx?ICSRID=" & CurrentICSR_ID)
     End Sub
 
     Protected Sub EditMedicalHistory_Button_Click(sender As Object, e As EventArgs)
