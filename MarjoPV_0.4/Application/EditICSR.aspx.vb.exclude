@@ -24,7 +24,7 @@ Partial Class Application_EditICSR
                         Assignees_DropDownList.Enabled = False
                         Assignees_DropDownList.ToolTip = CannotEditControlText
                     End If
-                    If CanEdit(tables.ICSRs, CurrentICSR_ID, tables.ICSRs, fields.IsSerious) = True Then
+                    If CanEdit(tables.ICSRs, CurrentICSR_ID, tables.ICSRs, fields.IsSerious_ID) = True Then
                         IsSerious_DropDownList.Enabled = True
                         IsSerious_DropDownList.ToolTip = "Please select 'True' or 'False'"
                     Else

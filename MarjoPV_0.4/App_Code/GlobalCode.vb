@@ -63,7 +63,7 @@ Public Class GlobalCode
         Patient_Initials
         Patient_YearOfBirth_ID
         Patient_Gender_ID
-        IsSerious
+        IsSerious_ID
         SeriousnessCriterion_ID
         Narrative
         CompanyComment
@@ -1203,7 +1203,7 @@ Public Class GlobalCode
         Dim AtSaveButtonClick_Value As Object = Nothing
         Dim AtSaveButtonClickReader As SqlDataReader
         If InputType = InputTypes.String Then
-            AtSaveButtonClickReadCommand.CommandText = "SELECT " & FieldToCheckName & " FROM " & TableToCheckName & " WHERE ID = @CurrentDataSet_ID"
+            AtSaveButtonClickReadCommand.CommandText = "SELECT CASE WHEN " & FieldToCheckName & "  IS NULL THEN '' ELSE " & FieldToCheckName & " END AS " & FieldToCheckName & " FROM " & TableToCheckName & " WHERE ID = @CurrentDataSet_ID"
             AtEditPageLoad_Value = AtEditPageLoadHiddenField.Value
             AtSaveButtonClick_Value = String.Empty
             Try

@@ -18,9 +18,9 @@
         </div>
     </div>
     <div class="col-lg-12">
-        <asp:UpdatePanel runat="server">
+        <asp:UpdatePanel ID="Main_Table" runat="server">
             <ContentTemplate>
-                <table id="Main_Table" class="table table-responsive table-striped table-hover" runat="server">
+                <table class="table table-responsive table-striped table-hover" runat="server">
                     <tr>
                         <td colspan="2"><asp:Label ID="Status_Label" runat="server" style="text-align: center" CssClass="form-control" autosize="true" ></asp:Label></td>
                     </tr>
@@ -124,6 +124,7 @@
             </ContentTemplate>
         </asp:UpdatePanel>
     </div>
+    <!-- <asp:HiddenField ID ="CompanyID_HiddenField" runat="server" /> -->
     <asp:HiddenField ID="ICSRID_HiddenField" runat="server" />
 </asp:Content>
 
